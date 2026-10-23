@@ -151,7 +151,11 @@ def execute(args):
             else sorted(
                 r["symbol"]
                 for r in read_query(
-                    client.table("watchlist").select("symbol").eq("active", True).eq("exchange", "NSE")
+                    client.table("watchlist")
+                    .select("symbol")
+                    .eq("active", True)
+                    .eq("exchange", "NSE")
+                    .eq("kind", "equity")
                 )
             )
         )

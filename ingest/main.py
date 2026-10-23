@@ -127,11 +127,12 @@ class Pipeline:
                 self.sleep(delay)
 
     def sync_watchlist(self, watchlist):
-        symbols = list(dict.fromkeys(s.upper().strip() for s in watchlist["symbols"]))
+        indices = set(watchlist.get("indices", []))
+        symbols = list(dict.fromkeys(s.upper().strip() for s in watchlist["symbols"] + list(indices)))
         if watchlist["exchange"] != "NSE" or any(not re.fullmatch(r"[A-Z0-9&._-]{1,40}", s) for s in symbols):
             raise ValueError("Phase 1 supports valid NSE symbols only")
         existing = self.client.table("watchlist").select("symbol").eq("exchange", "NSE").execute().data
-        rows = [{"symbol": s, "exchange": "NSE", "active": True} for s in symbols]
+        rows = [{"symbol": s, "exchange": "NSE", "active": True, "kind": "index" if s in indices else "equity"} for s in symbols]
         rows += [
             {"symbol": r["symbol"], "exchange": "NSE", "active": False}
             for r in existing
@@ -167,7 +168,7 @@ class Pipeline:
                 output_summary="Stored candles are current through the last eligible session",
             )
             return "skipped", 0
-        priorities = sources or self.config["source_priority"]
+        priorities = sources or (self.config.get("index_source_priority", ["yfinance"]) if symbol == "NIFTY50" else self.config["source_priority"])
         frame = None
         chosen = None
         for name in priorities:

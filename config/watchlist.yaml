@@ -5,3 +5,5 @@ symbols:
   - INFY
   - HDFCBANK
   - ICICIBANK
+indices:
+  - NIFTY50

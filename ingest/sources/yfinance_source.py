@@ -11,7 +11,8 @@ class YFinanceSource(PriceSource):
     def fetch_daily(self, symbol, start, end):
         import yfinance as yf
 
-        frame = yf.Ticker(f"{symbol}.NS").history(
+        ticker = {"NIFTY50": "^NSEI"}.get(symbol, f"{symbol}.NS")
+        frame = yf.Ticker(ticker).history(
             start=start.isoformat(),
             end=(end + timedelta(days=1)).isoformat(),
             interval="1d",
