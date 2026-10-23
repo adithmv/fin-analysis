@@ -123,3 +123,37 @@ def test_future_candles_do_not_change_past_signals():
     for key in v:
         np.testing.assert_allclose(v[key][:300], short_v[key], equal_nan=True)
     assert [x for x in r if x["index"] < 300] == short_r
+
+
+def test_short_history_and_version_replacement(monkeypatch):
+    from signals.main import run_symbol
+    from types import SimpleNamespace
+
+    tables = {"candles": candles(25).to_dict("records"), "indicator_values": [], "signals": []}
+    events = []
+    monkeypatch.setattr("signals.main.read_rows", lambda client, table, *args: tables[table])
+    monkeypatch.setattr("signals.main.log_event", lambda *args, **kwargs: events.append((args, kwargs)))
+
+    class Client:
+        def rpc(self, name, payload):
+            assert name == "replace_signal_days"
+
+            def execute():
+                dates = set(payload["p_dates"])
+                for table, key in (("signals", "p_signals"), ("indicator_values", "p_indicators")):
+                    tables[table] = [r for r in tables[table] if r["ts"] not in dates] + payload[key]
+                return SimpleNamespace(data=None)
+
+            return SimpleNamespace(execute=execute)
+
+    client = Client()
+    assert run_symbol(client, "SHORT", CONFIG, "test")["status"] == "success"
+    assert any(args[2:4] == ("load_candles", "skipped") for args, _ in events)
+    assert all(r["value"] is None for r in tables["indicator_values"] if r["series_key"] == "sma_200")
+    tables["signals"].append({**tables["signals"][0], "signal_key": "obsolete_rule"})
+    updated = deepcopy(CONFIG)
+    updated["logic_version"] = "2.0.1-test"
+    updated["rules"]["rsi_oversold"] = 25
+    assert run_symbol(client, "SHORT", updated, "test2", recompute=True)["days"] == 25
+    assert {r["logic_version"] for r in tables["signals"]} == {"2.0.1-test"}
+    assert not any(r["signal_key"] == "obsolete_rule" for r in tables["signals"])

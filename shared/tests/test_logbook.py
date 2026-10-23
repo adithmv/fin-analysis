@@ -43,6 +43,20 @@ def test_logging_failure_does_not_crash(client, capsys):
     assert "secret error" not in capsys.readouterr().err
 
 
+def test_connection_setup_is_retried_but_ambiguous_write_is_not(client, monkeypatch):
+    import httpx
+
+    monkeypatch.setattr(logbook.time, "sleep", lambda _: None)
+    request = client.table().insert().execute
+    request.side_effect = [httpx.ConnectError("TLS reset"), None]
+    assert logbook.log_event(uuid4(), "signals", "run_start", "started")
+    assert request.call_count == 2
+    request.reset_mock()
+    request.side_effect = httpx.ReadTimeout("response lost")
+    assert not logbook.log_event(uuid4(), "signals", "run_start", "started")
+    assert request.call_count == 1
+
+
 def test_bulk_upsert_batches_and_propagates_errors():
     client = MagicMock()
     assert bulk_upsert(client, "candles", [{"id": n} for n in range(5)], "id", 2) == 5

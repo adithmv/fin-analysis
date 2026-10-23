@@ -239,6 +239,7 @@ def main(argv=None):
             except Exception as exc:
                 totals["failed"] += 1
                 log_event(run_id, "signals", "write_signals", "failed", symbol=symbol, error=str(exc))
+                print(f"{symbol} failed: {sanitize(exc)}", file=sys.stderr)
         log_event(
             run_id,
             "signals",

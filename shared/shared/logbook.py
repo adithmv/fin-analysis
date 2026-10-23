@@ -6,6 +6,7 @@ import sys
 import time
 from contextlib import contextmanager
 from types import SimpleNamespace
+import httpx
 
 from .db import get_client
 
@@ -83,7 +84,16 @@ def log_event(
                 row[key] = " ".join(str(row[key]).split())[:300]
         if row["error"]:
             row["error"] = str(row["error"])[:2000]
-        get_client().table("agent_events").insert(row).execute()
+        for attempt in range(3):
+            try:
+                get_client().table("agent_events").insert(row).execute()
+                break
+            except (httpx.ConnectError, httpx.ConnectTimeout):
+                # Connection setup failed before sending the insert. Do not retry
+                # read/write timeouts: the server may already have saved the event.
+                if attempt == 2:
+                    raise
+                time.sleep(0.5 * 2**attempt)
         return True
     except Exception:
         # Do not print database exceptions: they can contain authentication headers.
