@@ -1,0 +1,9 @@
+source_priority: [jugaad, openchart, yfinance]
+default_lookback_days: 365
+delay_between_symbols_seconds: 1.5
+retries: 3
+retry_backoff_seconds: 2
+source_timeout_seconds: 60
+crosscheck:
+  enabled: true
+  tolerance_percent: 0.5
