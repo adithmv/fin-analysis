@@ -38,6 +38,8 @@ def study_symbol(symbol, frame, signals, config, signal_key=None):
         if i is not None:
             groups[(row["signal_key"], row["direction"])].append(i)
     excluded, _ = exclusion_mask(frame, signals, config)
+    opens = frame.open.to_numpy(float)
+    closes = frame.close.to_numpy(float)
     rows = []
     for sample, (a, b) in samples(len(frame), config["sample_split"]["in_sample_fraction"]).items():
         for (key, direction), occurrences in sorted(groups.items()):
@@ -47,9 +49,7 @@ def study_symbol(symbol, frame, signals, config, signal_key=None):
                     return a <= i and i + horizon < b and not excluded[i : i + horizon + 1].any()
 
                 def outcome(i):
-                    return net_return(
-                        float(frame.iloc[i + 1].open), float(frame.iloc[i + horizon].close), config, direction
-                    )
+                    return float(net_return(opens[i + 1], closes[i + horizon], config, direction))
 
                 valid = sorted(set(i for i in occurrences if eligible(i)))
                 independent = []
