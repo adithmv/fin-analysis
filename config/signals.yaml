@@ -1,0 +1,28 @@
+timeframe: 1d
+warmup_candles: 400
+logic_version: "2.0.0"
+indicators:
+  sma: [20, 50, 200]
+  ema: [12, 26]
+  rsi: [14]
+  macd: {fast: 12, slow: 26, signal: 9}
+  bollinger: {period: 20, stddev: 2}
+  atr: [14]
+  adx: [14]
+  stochastic: {k: 14, d: 3, smooth: 3}
+  obv: true
+  volume_avg: [20]
+patterns: [CDLDOJI, CDLHAMMER, CDLINVERTEDHAMMER, CDLHANGINGMAN, CDLSHOOTINGSTAR, CDLENGULFING, CDLHARAMI, CDLPIERCING, CDLDARKCLOUDCOVER, CDLMORNINGSTAR, CDLEVENINGSTAR, CDL3WHITESOLDIERS, CDL3BLACKCROWS, CDLMARUBOZU, CDLSPINNINGTOP]
+rules:
+  rsi_oversold: 30
+  rsi_overbought: 70
+  breakout_window_days: 20
+  volume_spike_multiple: 2.0
+trend_state:
+  adx_threshold: 20
+levels:
+  swing_window: 5
+quality:
+  split_jump_threshold_percent: 20
+  max_missing_weekdays_in_row: 5
+  zero_volume_streak_days: 5

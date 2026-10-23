@@ -25,3 +25,19 @@ enabled for events and candles. Service keys stay in local Python configuration.
 Verification: inspect the three tables, attempt an insert with the public key
 (must fail), and subscribe to `agent_events` before running ingestion. Cloud
 verification requires a configured project.
+
+## Phase 2
+
+Apply `002_signals.sql` then `003_backtest.sql` once, after Phase 1.
+`indicator_values` stores parameter-named series, and `signals` stores dated
+patterns/rules/levels/quality flags plus logic version. `replace_signal_days` is
+a service-only, security-invoker transaction replacing a batch of days' indicators and
+signals together, removing stale rules and making incomplete writes retryable.
+
+`signal_stats` stores event counts, independent samples, baseline and edge;
+`backtest_runs` records configuration/code identity; `backtest_results` includes
+strategy **and benchmark** equity curves; `backtest_trades` includes `sample`
+so in/out-of-sample trades are distinguishable. Unique result keys prevent
+duplicate writes within a run. These additions resolve missing identities in
+the Phase 2 example schemas. All six tables follow Phase 1 public read-only RLS;
+only Python service-role writes are granted. Large indicators are not streamed.
