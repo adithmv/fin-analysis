@@ -1,5 +1,5 @@
 source_priority: [jugaad, openchart, yfinance]
-default_lookback_days: 365
+default_lookback_days: 1095
 delay_between_symbols_seconds: 1.5
 retries: 3
 retry_backoff_seconds: 2
