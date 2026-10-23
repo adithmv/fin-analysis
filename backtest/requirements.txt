@@ -1,0 +1,6 @@
+vectorbt==1.0.0
+numpy==2.3.5
+pandas==2.3.3
+plotly==5.24.1
+TA-Lib==0.8.2
+PyYAML==6.0.3
