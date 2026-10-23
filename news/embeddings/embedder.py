@@ -16,7 +16,7 @@ class Embedder:
             local_files_only=offline,
             trust_remote_code=False,
         )
-        if self.model.get_sentence_embedding_dimension() != config["dimension"]:
+        if self.model.get_embedding_dimension() != config["dimension"]:
             raise ValueError("Embedding dimensions differ from database configuration")
 
     def encode(self, texts):

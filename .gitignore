@@ -19,3 +19,4 @@ playwright-report/
 supabase/.temp/
 supabase/.branches/
 *.log
+news/tests/gold/headlines.csv

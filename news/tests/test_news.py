@@ -101,3 +101,36 @@ def test_conditional_feed_and_bad_xml():
     response = SimpleNamespace(status_code=200, content=b"not xml", headers={}, raise_for_status=lambda: None)
     with pytest.raises(ValueError):
         fetch(source, {"user_agent": "test", "timeout_seconds": 1}, request=lambda *a, **kw: response)
+
+
+def test_label_mapping_language_and_attachment_fallback():
+    from news.scoring.sentiment import decode, english
+    from news.collect.announcements import attachment_url
+
+    assert decode([0.8, 0.15, 0.05], {0: "negative", 1: "neutral", 2: "positive"})["score"] == pytest.approx(
+        -0.75
+    )
+    assert not english({"title": "१२३ हिंदी खबर", "language": "hi"})
+    assert attachment_url("-", "https://example.com/announcement") == "https://example.com/announcement"
+    assert len(item("TCS reports profit", "https://example.com/x")["summary"]) == 0
+
+
+@pytest.mark.parametrize("status", [403, 429])
+def test_feed_backoff(status):
+    from types import SimpleNamespace
+    import requests
+
+    waits = []
+
+    def fail():
+        raise requests.HTTPError("limited")
+
+    response = SimpleNamespace(status_code=status, headers={"Retry-After": "2"}, raise_for_status=fail)
+    with pytest.raises(requests.HTTPError):
+        fetch(
+            {"url": "https://example.com/feed"},
+            {"user_agent": "test", "timeout_seconds": 1},
+            request=lambda *a, **k: response,
+            sleep=waits.append,
+        )
+    assert waits == [2, 2]

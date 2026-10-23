@@ -116,6 +116,11 @@ def article(
         title_hash=sha256(title_normalized(title).encode()).hexdigest(),
         external_id=external_id,
         raw=metadata,
+        provenance={
+            k: v
+            for k, v in metadata.items()
+            if k in ("exchange_symbol", "category", "origin_exchange", "time_assumption")
+        },
     )
 
 

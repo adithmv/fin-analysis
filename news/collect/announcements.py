@@ -3,7 +3,14 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 import time
-from ..normalize import article, plain
+from ..normalize import article, plain, clean_url
+
+
+def attachment_url(value, fallback):
+    try:
+        return clean_url(str(value or ""))
+    except ValueError:
+        return fallback
 
 
 def fetch(symbol, exchange, since, until, aliases):
@@ -30,9 +37,9 @@ def fetch(symbol, exchange, since, until, aliases):
                 if item.get("symbol") != symbol:
                     continue
                 external = str(item.get("seq_id") or item.get("dt"))
-                url = (
-                    item.get("attchmntFile")
-                    or f"https://www.nseindia.com/companies-listing/corporate-filings-announcements?symbol={symbol}&id={external}"
+                url = attachment_url(
+                    item.get("attchmntFile"),
+                    f"https://www.nseindia.com/companies-listing/corporate-filings-announcements?symbol={symbol}&id={external}",
                 )
                 summary = plain(item.get("attchmntText"))
                 rows.append(
