@@ -619,3 +619,99 @@ footer {
     margin-top: 8px;
   }
 }
+
+/* Phase 2 evidence views */
+.research-note {
+  margin: 20px 0;
+  padding: 18px 22px;
+  background: #eef4ef;
+  border: 1px solid #dce7de;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.research-note strong {
+  color: #245d49;
+}
+.research-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.research-scroll table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+.research-scroll th {
+  color: #71837b;
+  font-weight: 600;
+  background: #f6f8f6;
+  white-space: nowrap;
+}
+.research-scroll th,
+.research-scroll td {
+  padding: 15px 18px;
+  border-bottom: 1px solid #e7ece8;
+  vertical-align: top;
+}
+.research-scroll small {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+}
+.insufficient {
+  color: #7d8581;
+  background: #f7f7f7;
+}
+.overlay-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 15px 5px;
+  font-size: 11px;
+}
+.overlay-controls label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.indicator-chart {
+  height: 160px;
+  width: 100%;
+}
+.indicator-title {
+  font-size: 12px;
+  padding: 16px 0 8px;
+  color: #64786d;
+  border-top: 1px solid #e7ece8;
+}
+.marker-tooltip {
+  min-height: 42px;
+  font-size: 12px;
+  color: #526c60;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  font-size: 11px;
+}
+.page > h2 {
+  margin-top: 28px;
+}
+nav {
+  flex-wrap: wrap;
+}
+.status-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 700px) {
+  .status-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .research-scroll td,
+  .research-scroll th {
+    padding: 12px;
+  }
+}

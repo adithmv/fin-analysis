@@ -1,12 +1,7 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  CandlestickSeries,
-  HistogramSeries,
-  createChart,
-  type Time,
-} from "lightweight-charts";
+import { ResearchChart } from "./research-chart";
 import { getBrowserClient } from "@/lib/supabase";
 import { type Candle, money, sessionDate } from "@/lib/types";
 import { EventFeed } from "./event-feed";
@@ -125,7 +120,7 @@ export function StockPage({ symbol }: { symbol: string }) {
                   <strong>{last.source}</strong>
                 </div>
               </div>
-              <CandleChart candles={candles} />
+              <ResearchChart candles={candles} symbol={symbol} />
               <p className="attribution">
                 {last.adjusted
                   ? "Split-adjusted source data."
@@ -150,73 +145,5 @@ export function StockPage({ symbol }: { symbol: string }) {
       </section>
       <EventFeed symbol={symbol} />
     </div>
-  );
-}
-
-function CandleChart({ candles }: { candles: Candle[] }) {
-  const container = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!container.current) return;
-    const chart = createChart(container.current, {
-      autoSize: true,
-      layout: {
-        background: { color: "#ffffff" },
-        textColor: "#81918d",
-        fontSize: 11,
-        attributionLogo: true,
-      },
-      grid: {
-        vertLines: { color: "#f3f5f5" },
-        horzLines: { color: "#edf1ef" },
-      },
-      rightPriceScale: { borderColor: "#e4eae7" },
-      timeScale: { borderColor: "#e4eae7", timeVisible: false },
-      crosshair: { mode: 0 },
-    });
-    const price = chart.addSeries(CandlestickSeries, {
-      upColor: "#229779",
-      downColor: "#d66a6e",
-      wickUpColor: "#229779",
-      wickDownColor: "#d66a6e",
-      borderVisible: false,
-    });
-    price.setData(
-      candles.map((c) => ({
-        time: sessionDate(c.ts) as Time,
-        open: Number(c.open),
-        high: Number(c.high),
-        low: Number(c.low),
-        close: Number(c.close),
-      })),
-    );
-    const volume = chart.addSeries(HistogramSeries, {
-      priceFormat: { type: "volume" },
-      priceScaleId: "volume",
-    });
-    volume
-      .priceScale()
-      .applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
-    price
-      .priceScale()
-      .applyOptions({ scaleMargins: { top: 0.08, bottom: 0.24 } });
-    volume.setData(
-      candles
-        .filter((c) => c.volume !== null)
-        .map((c) => ({
-          time: sessionDate(c.ts) as Time,
-          value: Number(c.volume),
-          color: Number(c.close) >= Number(c.open) ? "#b4dbcd" : "#ecc6c8",
-        })),
-    );
-    chart.timeScale().fitContent();
-    return () => chart.remove();
-  }, [candles]);
-  return (
-    <div
-      ref={container}
-      className="chart"
-      role="img"
-      aria-label={`${candles.length} daily candlesticks with volume; price details listed above`}
-    />
   );
 }

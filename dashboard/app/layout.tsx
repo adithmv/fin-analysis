@@ -35,6 +35,12 @@ export default function RootLayout({
             <Link href="/logbook">
               ≡ <span>Logbook</span>
             </Link>
+            <Link href="/lab">
+              ◇ <span>Signal Lab</span>
+            </Link>
+            <Link href="/backtests">
+              ↗ <span>Backtests</span>
+            </Link>
           </nav>
           <div className="sidebar-note">
             <span className="dot" /> NSE · DAILY DATA
@@ -43,7 +49,7 @@ export default function RootLayout({
               <br />
               Every action, accounted for.
             </p>
-            <span className="phase">PHASE 01 / FOUNDATION</span>
+            <span className="phase">PHASE 02 / SIGNALS & EVIDENCE</span>
           </div>
         </aside>
         <main className="workspace">

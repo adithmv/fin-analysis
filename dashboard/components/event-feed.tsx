@@ -7,6 +7,7 @@ import { dateTime, type EventRow } from "@/lib/types";
 const modules = [
   "ingest",
   "signals",
+  "backtest",
   "news",
   "analysis-agents",
   "browser-agent",
@@ -14,6 +15,7 @@ const modules = [
 const labels: Record<string, string> = {
   ingest: "Price ingestion",
   signals: "Technical signals",
+  backtest: "Historical testing",
   news: "News & sentiment",
   "analysis-agents": "Research agents",
   "browser-agent": "Web research",
@@ -311,7 +313,9 @@ export function EventFeed({
             <div className="status-tile" key={name}>
               <div className="tile-label">
                 <span>
-                  {name === "ingest" ? "ACTIVE MODULE" : "COMING LATER"}
+                  {["ingest", "signals", "backtest"].includes(name)
+                    ? "ACTIVE MODULE"
+                    : "COMING LATER"}
                 </span>
                 <span>↗</span>
               </div>

@@ -73,10 +73,14 @@ test("logbook filters and run navigation work", async ({ page }) => {
   await page.goto("/logbook");
   await page.getByLabel("Status", { exact: true }).selectOption("failed");
   await expect(page.locator(".event").first()).toBeVisible();
-  await expect.poll(async () => {
-    const statuses = await page.locator(".event summary .badge").allTextContents();
-    return statuses.length > 0 && statuses.every((s) => s === "failed");
-  }).toBe(true);
+  await expect
+    .poll(async () => {
+      const statuses = await page
+        .locator(".event summary .badge")
+        .allTextContents();
+      return statuses.length > 0 && statuses.every((s) => s === "failed");
+    })
+    .toBe(true);
   await page.locator(".event summary").first().click();
   await page.locator('.event[open] a[href^="/logbook/run/"]').click();
   await expect(
