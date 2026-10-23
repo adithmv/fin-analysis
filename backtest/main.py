@@ -7,11 +7,13 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import time
 from uuid import uuid4
 
 import numpy as np
 import pandas as pd
 import yaml
+import httpx
 from shared.db import get_client, bulk_upsert
 from shared.logbook import log_event, sanitize
 
@@ -23,6 +25,17 @@ from backtest.event_study import study_symbol, pooled  # noqa: E402
 from backtest.splits import samples, exclusion_mask  # noqa: E402
 from backtest.strategies import STRATEGIES  # noqa: E402
 from backtest.costs import rates  # noqa: E402
+
+
+def read_query(query):
+    """Retry only idempotent reads after a transient connection failure."""
+    for attempt in range(3):
+        try:
+            return query.execute().data
+        except httpx.TransportError:
+            if attempt == 2:
+                raise
+            time.sleep(0.5 * 2**attempt)
 
 
 def read_rows(client, table, symbol):
@@ -38,7 +51,7 @@ def read_rows(client, table, symbol):
         )
         if table == "signals":
             query = query.order("signal_key")
-        page = query.range(offset, offset + 499).execute().data
+        page = read_query(query.range(offset, offset + 499))
         rows.extend(page)
         if len(page) < 500:
             return rows
@@ -89,7 +102,17 @@ def load_symbol(client, symbol):
 
 def provenance(config, data):
     metadata = dict(config)
+    sources = hashlib.sha256()
+    for path in sorted((ROOT / "backtest").rglob("*.py")):
+        if ".venv" not in path.parts and "tests" not in path.parts:
+            sources.update(path.relative_to(ROOT).as_posix().encode())
+            sources.update(path.read_bytes())
     metadata.update(
+        source_hash=sources.hexdigest(),
+        working_tree_dirty=subprocess.run(
+            ["git", "diff", "--quiet", "HEAD", "--", "backtest", "config/backtest.yaml"], cwd=ROOT
+        ).returncode
+        != 0,
         code_version=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
         input_hashes={s: item[2] for s, item in data.items()},
         signal_versions={s: item[3] for s, item in data.items()},
@@ -119,24 +142,21 @@ def execute(args):
     ):
         raise ValueError("Invalid horizons or starting capital")
     client = get_client()
-    symbols = (
-        sorted(set(s.strip().upper() for s in args.symbols.split(",") if s.strip()))
-        if args.symbols
-        else sorted(
-            r["symbol"]
-            for r in client.table("watchlist")
-            .select("symbol")
-            .eq("active", True)
-            .eq("exchange", "NSE")
-            .execute()
-            .data
-        )
-    )
-    if not symbols:
-        raise ValueError("No symbols selected")
     run_id = str(uuid4())
-    log_event(run_id, "backtest", "run_start", "started", input_summary=f"{args.mode}: {', '.join(symbols)}")
+    log_event(run_id, "backtest", "run_start", "started", input_summary=args.mode)
     try:
+        symbols = (
+            sorted(set(s.strip().upper() for s in args.symbols.split(",") if s.strip()))
+            if args.symbols
+            else sorted(
+                r["symbol"]
+                for r in read_query(
+                    client.table("watchlist").select("symbol").eq("active", True).eq("exchange", "NSE")
+                )
+            )
+        )
+        if not symbols:
+            raise ValueError("No symbols selected")
         data = {}
         for symbol in symbols:
             data[symbol] = load_symbol(client, symbol)

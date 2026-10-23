@@ -14,6 +14,34 @@ from backtest.strategies import STRATEGIES
 CONFIG = yaml.safe_load((Path(__file__).resolve().parents[2] / "config/backtest.yaml").read_text())
 
 
+def test_transient_reads_retry_but_do_not_hide_persistent_failure(monkeypatch):
+    import httpx
+    from types import SimpleNamespace
+    from backtest.main import read_query
+
+    monkeypatch.setattr("backtest.main.time.sleep", lambda _: None)
+
+    class Query:
+        calls = 0
+
+        def execute(self):
+            self.calls += 1
+            if self.calls < 3:
+                raise httpx.ConnectError("temporary connection reset")
+            return SimpleNamespace(data=[{"symbol": "TCS"}])
+
+    query = Query()
+    assert read_query(query) == [{"symbol": "TCS"}]
+    assert query.calls == 3
+
+    class Broken:
+        def execute(self):
+            raise httpx.ConnectError("persistent failure")
+
+    with pytest.raises(httpx.ConnectError):
+        read_query(Broken())
+
+
 def frame(n=12):
     return pd.DataFrame(
         {
