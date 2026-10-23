@@ -178,3 +178,18 @@ def test_current_session_waits_until_evening():
     tz = ZoneInfo("Asia/Kolkata")
     assert completed_date(datetime(2026, 1, 5, 12, tzinfo=tz)) == date(2026, 1, 2)
     assert completed_date(datetime(2026, 1, 5, 18, tzinfo=tz)) == date(2026, 1, 5)
+
+
+def test_crosscheck_falls_through_unavailable_secondary():
+    def fetch(name, *args):
+        if name == "openchart":
+            raise SourceError("no exact match")
+        return frame()
+
+    pipeline, events = make(fetch)
+    pipeline.config["source_priority"] = ["jugaad", "openchart", "yfinance"]
+    pipeline.config["crosscheck"]["enabled"] = True
+    pipeline.run(["TCS"], date(2026, 1, 5))
+    cross = [(a, kw) for a, kw in events if a[2] == "crosscheck"]
+    assert cross[-1][0][3] == "success"
+    assert cross[-1][1]["tool"] == "yfinance"

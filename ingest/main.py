@@ -242,52 +242,53 @@ class Pipeline:
         if not candidates:
             self.event("crosscheck", "skipped", symbol=symbol, output_summary="No second source available")
             return
-        name = candidates[0]
-        tail = frame.tail(5)
-        start = tail.iloc[0].ts.tz_convert("Asia/Kolkata").date()
-        end = tail.iloc[-1].ts.tz_convert("Asia/Kolkata").date()
-        try:
-            other = self.fetch(name, symbol, start, end)
-            joined = tail[["ts", "close"]].merge(
-                other[["ts", "close"]], on="ts", suffixes=("_primary", "_other")
-            )
-            if joined.empty:
-                raise SourceError("No overlapping dates for comparison")
-            joined["difference_percent"] = (
-                (joined.close_primary - joined.close_other).abs() / joined.close_primary
-            ) * 100
-            bad = joined[joined.difference_percent > self.config["crosscheck"]["tolerance_percent"]]
-            details = [
-                {
-                    "ts": r.ts.isoformat(),
-                    "primary": float(r.close_primary),
-                    "secondary": float(r.close_other),
-                    "difference_percent": float(r.difference_percent),
-                }
-                for r in bad.itertuples()
-            ]
-            self.event(
-                "crosscheck",
-                "warning" if len(bad) else "success",
-                symbol=symbol,
-                tool=name,
-                output_summary=f"{len(joined)} overlapping sessions; {len(bad)} differences above tolerance",
-                meta={
-                    "primary_source": chosen.name,
-                    "secondary_source": name,
-                    "differences": details,
-                    "different_adjustment_basis": chosen.adjusted != create_source(name).adjusted,
-                },
-            )
-        except SourceError as exc:
-            self.event(
-                "crosscheck",
-                "warning",
-                symbol=symbol,
-                tool=name,
-                error=str(exc),
-                output_summary="Cross-check unavailable; kept primary candles",
-            )
+        for name in candidates:
+            tail = frame.tail(5)
+            start = tail.iloc[0].ts.tz_convert("Asia/Kolkata").date()
+            end = tail.iloc[-1].ts.tz_convert("Asia/Kolkata").date()
+            try:
+                other = self.fetch(name, symbol, start, end)
+                joined = tail[["ts", "close"]].merge(
+                    other[["ts", "close"]], on="ts", suffixes=("_primary", "_other")
+                )
+                if joined.empty:
+                    raise SourceError("No overlapping dates for comparison")
+                joined["difference_percent"] = (
+                    (joined.close_primary - joined.close_other).abs() / joined.close_primary
+                ) * 100
+                bad = joined[joined.difference_percent > self.config["crosscheck"]["tolerance_percent"]]
+                details = [
+                    {
+                        "ts": r.ts.isoformat(),
+                        "primary": float(r.close_primary),
+                        "secondary": float(r.close_other),
+                        "difference_percent": float(r.difference_percent),
+                    }
+                    for r in bad.itertuples()
+                ]
+                self.event(
+                    "crosscheck",
+                    "warning" if len(bad) else "success",
+                    symbol=symbol,
+                    tool=name,
+                    output_summary=f"{len(joined)} overlapping sessions; {len(bad)} differences above tolerance",
+                    meta={
+                        "primary_source": chosen.name,
+                        "secondary_source": name,
+                        "differences": details,
+                        "different_adjustment_basis": chosen.adjusted != create_source(name).adjusted,
+                    },
+                )
+                return
+            except SourceError as exc:
+                self.event(
+                    "crosscheck",
+                    "warning",
+                    symbol=symbol,
+                    tool=name,
+                    error=str(exc),
+                    output_summary="Cross-check unavailable; kept primary candles",
+                )
 
     def run(self, symbols, end, **kwargs):
         totals = {"success": 0, "failed": 0, "skipped": 0, "candles": 0}
