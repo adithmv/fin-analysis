@@ -13,7 +13,7 @@ SENSITIVE = re.compile(r'key|token|secret|password|authorization|cookie', re.I)
 
 def sanitize(value):
     if isinstance(value, dict):
-        return {str(k): '[REDACTED]' if SENSITIVE.search(str(k)) else sanitize(v)
+        return {str(k): '[REDACTED]' if SENSITIVE.search(str(k)) and k not in ('tokens_in', 'tokens_out') else sanitize(v)
                 for k, v in value.items()}
     if isinstance(value, (list, tuple)):
         return [sanitize(v) for v in value]

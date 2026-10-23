@@ -24,6 +24,8 @@ def test_context_success_and_sanitization(client, monkeypatch):
     assert len(rows[1]['output_summary']) <= 300
     assert rows[1]['meta'] == {'access_token': '[REDACTED]', 'safe': '[REDACTED]'}
     assert rows[0]['input_summary'] == '[REDACTED]'
+    assert rows[1]['tokens_in'] is None
+    assert rows[1]['tokens_out'] is None
 
 
 def test_failure_reraises_original(client):
