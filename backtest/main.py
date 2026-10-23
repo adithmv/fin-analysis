@@ -58,7 +58,7 @@ def read_rows(client, table, symbol):
     raise ValueError("History exceeds supported size")
 
 
-def load_symbol(client, symbol):
+def load_symbol(client, symbol, require_signals=True):
     frame = pd.DataFrame(read_rows(client, "candles", symbol))
     if len(frame) < 2:
         raise ValueError(f"{symbol}: need at least two candles")
@@ -73,6 +73,9 @@ def load_symbol(client, symbol):
     ):
         raise ValueError(f"{symbol}: invalid prices or duplicate dates")
     signals = read_rows(client, "signals", symbol)
+    if not require_signals:
+        digest = hashlib.sha256(frame.to_json(date_format="iso").encode()).hexdigest()
+        return frame, signals, digest, "prices-only"
     markers = {pd.Timestamp(r["ts"]): r for r in signals if r["signal_key"] == "trend_state"}
     digest = hashlib.sha256()
     for candle in frame.itertuples():
@@ -187,8 +190,30 @@ def execute(args):
         metadata = provenance(config, data)
         if args.mode == "events":
             rows = []
+            if args.source != "technical":
+                from backtest import news_events
+
+                news_config = yaml.safe_load((ROOT / "config/news.yaml").read_text())
+                occurrences, news_hash = news_events.load(client, news_config, args.source, args.event_type)
+                benchmark = load_symbol(client, news_config["benchmark"], require_signals=False)
+                metadata.update(
+                    event_source=args.source,
+                    news_config=news_config,
+                    news_input_hash=news_hash,
+                    benchmark=news_config["benchmark"],
+                    benchmark_input_hash=benchmark[2],
+                    horizon_definition="Entry open of effective trading date; exit close h-1 sessions later",
+                    absolute_move_definition="Absolute price move before costs, less same-window index move when abnormal",
+                    abnormal_definition="Directional net stock return minus signed same-window gross index return",
+                )
             for symbol, (frame, signals, *_rest) in data.items():
-                result = study_symbol(symbol, frame, signals, config, args.signal)
+                result = (
+                    study_symbol(symbol, frame, signals, config, args.signal)
+                    if args.source == "technical"
+                    else news_events.study(
+                        symbol, frame, signals, occurrences.get(symbol, []), benchmark[0], config
+                    )
+                )
                 rows.extend(result)
                 log_event(
                     run_id,
@@ -198,10 +223,17 @@ def execute(args):
                     symbol=symbol,
                     output_summary=f"{len(result)} signal/sample/horizon results",
                 )
-            rows += pooled(rows, config)
+            if args.source == "technical":
+                rows += pooled(rows, config)
+            else:
+                rows += news_events.pool(rows, config)
+                metadata["combinations_tested"] = len(
+                    {(r["signal_key"], r["horizon_days"], r["abnormal"]) for r in rows}
+                )
             for row in rows:
                 row.pop("_outcomes", None)
                 row.pop("_baseline", None)
+                row.pop("_absolute", None)
                 row.update(
                     stats_run_id=run_id,
                     config=metadata,
@@ -278,8 +310,8 @@ def execute(args):
             "backtest",
             "run_end",
             "success",
-            output_summary=f"{count} results; 1 parameter combination",
-            meta={"combinations_tested": 1},
+            output_summary=f"{count} results; {metadata['combinations_tested']} combinations",
+            meta={"combinations_tested": metadata["combinations_tested"]},
         )
         print(f"Run {run_id}: {count} results")
         return run_id
@@ -299,6 +331,8 @@ def main(argv=None):
             sub.add_argument("strategy", choices=STRATEGIES)
         else:
             sub.add_argument("--signal")
+            sub.add_argument("--source", choices=["technical", "news", "sentiment"], default="technical")
+            sub.add_argument("--event-type")
         group = sub.add_mutually_exclusive_group()
         group.add_argument("--all", action="store_true")
         group.add_argument("--symbols")
