@@ -15,11 +15,15 @@ def test_normalize_empty():
 
 def test_jugaad(monkeypatch):
     import jugaad_data.nse
-    raw = pd.DataFrame([{'DATE': date(2026, 1, 2), 'OPEN': 100, 'HIGH': 105, 'LOW': 99, 'CLOSE': 102, 'VOLUME': 500}])
-    monkeypatch.setattr(jugaad_data.nse, 'stock_df', lambda **kwargs: raw)
+    raw = [{'CH_SYMBOL':'TCS','CH_SERIES':'EQ','CH_TIMESTAMP':'2026-01-01T18:30:00Z',
+            'CH_OPENING_PRICE':100,'CH_TRADE_HIGH_PRICE':105,'CH_TRADE_LOW_PRICE':99,
+            'CH_CLOSING_PRICE':102,'CH_TOT_TRADED_QTY':500}]
+    monkeypatch.setattr(jugaad_data.nse, 'stock_raw', lambda **kwargs: raw)
     frame = JugaadSource().fetch_daily('TCS', date(2026,1,1), date(2026,1,3))
     assert list(frame.columns) == ['ts','open','high','low','close','volume']
     assert frame.iloc[0]['close'] == 102
+    from ingest.validate import session_timestamp
+    assert session_timestamp(frame.iloc[0]['ts']).isoformat() == '2026-01-01T18:30:00+00:00'
 
 
 def test_yfinance_inclusive_end_and_adjustment(monkeypatch):
