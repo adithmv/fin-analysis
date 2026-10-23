@@ -41,12 +41,12 @@ def test_indicators_match_independent_calculations():
     changes = f.close.diff().to_numpy()
     gain = np.maximum(changes, 0)
     loss = np.maximum(-changes, 0)
-    g, l = np.mean(gain[1:15]), np.mean(loss[1:15])
-    expected = [100 - 100 / (1 + g / l)]
+    g, avg_loss = np.mean(gain[1:15]), np.mean(loss[1:15])
+    expected = [100 - 100 / (1 + g / avg_loss)]
     for i in range(15, len(f)):
         g = (g * 13 + gain[i]) / 14
-        l = (l * 13 + loss[i]) / 14
-        expected.append(100 - 100 / (1 + g / l))
+        avg_loss = (avg_loss * 13 + loss[i]) / 14
+        expected.append(100 - 100 / (1 + g / avg_loss))
     np.testing.assert_allclose(values["rsi_14"][14:], expected, rtol=1e-10)
     ema = np.empty(len(f))
     ema[:] = np.nan
