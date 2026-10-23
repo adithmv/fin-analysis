@@ -1,18 +1,22 @@
 # Indian Market Research
 
-Personal, read-only NSE stock research. Phase 1 builds daily price ingestion,
-validation, an action logbook, and a live dashboard. No order placement or LLMs.
+Personal, read-only NSE stock research. Daily price ingestion, an action logbook,
+technical signals, event studies, strategy backtests, and a live dashboard.
+No order placement or LLMs.
 
 See [PHASE_1.md](PHASE_1.md) for the specification and
-[docs/VERIFICATION.md](docs/VERIFICATION.md) for verified behavior and limitations.
+[docs/VERIFICATION.md](docs/VERIFICATION.md) for Phase 1 verification. Phase 2 is
+specified in [PHASE_2.md](PHASE_2.md), with evidence and limitations in
+[docs/PHASE_2_VERIFICATION.md](docs/PHASE_2_VERIFICATION.md).
 Each completed step is checked, committed with a plain-language description,
 and pushed to GitHub.
 
 ## Modules
 
 Python modules cooperate through database tables, importing only `shared`.
-`ingest` writes candles, `logbook` reads events, and `dashboard` displays both.
-Later phases add signals, backtesting, news, and evidence-based discussions.
+`ingest` writes candles, `signals` derives indicators and dated signals,
+`backtest` measures their historical results, and `dashboard` displays the tables.
+`logbook` reads the shared action events. Later phases add news and research agents.
 
 All displayed findings are analysis for research, not investment recommendations.
 
@@ -29,7 +33,7 @@ python -m venv .venv
 Copy-Item .env.example .env
 ```
 
-Apply `db/migrations/001_init.sql` once to a new Supabase project. Fill root `.env`
+Apply the three files in `db/migrations/` in numeric order to a new Supabase project. Fill root `.env`
 with its URL, Python secret key, and public dashboard key. Never commit `.env`.
 Copy only the two `NEXT_PUBLIC_` settings to `dashboard/.env.local`.
 
@@ -43,6 +47,28 @@ npm run dev --prefix dashboard
 Open http://127.0.0.1:3000. Edit `config/watchlist.yaml` for tracked stocks;
 ingestion synchronizes it at startup. Run manually when daily data is needed.
 
+## Phase 2 workflow
+
+Use separate Python 3.12 environments: the signal and VectorBT dependency sets
+have different NumPy/Pandas requirements. Do not combine them in the root environment.
+
+```powershell
+python -m venv signals/.venv
+signals/.venv/Scripts/python.exe -m pip install -r signals/requirements-lock.txt -e ./shared
+python -m venv backtest/.venv
+backtest/.venv/Scripts/python.exe -m pip install -r backtest/requirements-lock.txt -e ./shared
+.venv/Scripts/python.exe ingest/main.py --all --days 1095
+signals/.venv/Scripts/python.exe signals/main.py --all
+backtest/.venv/Scripts/python.exe backtest/main.py events --all
+backtest/.venv/Scripts/python.exe backtest/main.py strategy sma_cross --all
+backtest/.venv/Scripts/python.exe backtest/main.py strategy rsi_reversion --all
+backtest/.venv/Scripts/python.exe backtest/main.py strategy pattern_trend --all
+backtest/.venv/Scripts/python.exe backtest/main.py strategy buy_and_hold --all
+```
+
+Stock pages now show overlays and signals. `/lab` compares event returns with
+baselines; `/backtests` compares strategies with buy-and-hold. All are read-only.
+
 ## Verification commands
 
 ```powershell
@@ -50,6 +76,8 @@ ingestion synchronizes it at startup. Run manually when daily data is needed.
 .venv\Scripts\ruff.exe check shared ingest logbook scripts
 .venv\Scripts\python.exe scripts/verify_cloud.py
 .venv\Scripts\python.exe scripts/failure_drills.py
+signals/.venv/Scripts/python.exe -m pytest signals/tests -q
+backtest/.venv/Scripts/python.exe -m pytest backtest/tests -q
 npm run build --prefix dashboard
 npm run test:e2e --prefix dashboard
 ```
@@ -60,7 +88,7 @@ still completing TCS. These are intentional failures in the real logbook.
 
 ## Boundaries
 
-Single user, NSE daily equities only in Phase 1; no orders, paid APIs, or LLMs.
+Single user, NSE daily equities; no orders, paid APIs, or LLMs.
 The specified public-key dashboard uses **public read-only** policies, so these
 tables must contain only public market data and sanitized operational events.
 Private portfolio data requires authenticated owner policies in a later change.

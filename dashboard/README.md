@@ -1,6 +1,7 @@
 # Dashboard
 
-Read-only Next.js viewer for `watchlist`, `candles`, and `agent_events`. Writes
+Read-only Next.js viewer for `watchlist`, `candles`, `agent_events`, `indicator_values`,
+`signals`, `signal_stats`, `backtest_runs`, `backtest_results`, and `backtest_trades`. Writes
 nothing and emits no business events. Subscribes to events/candles via Supabase
 Realtime and refetches after reconnect; a 15-second poll covers missed messages.
 
@@ -28,7 +29,17 @@ Open http://127.0.0.1:3000. For production locally: `npm run build`, then
 - `/`: live activity, module status, filters and event details.
 - `/logbook`: paginated events; `/logbook/run/[id]` shows a chronological run.
 - `/stocks`: active watchlist, latest close, provenance and weekday-based health.
-- `/stocks/[symbol]`: daily candles and volume, recent symbol activity.
+- `/stocks/[symbol]`: candles, SMA/EMA/Bollinger overlays, pattern markers and hover descriptions,
+  RSI/MACD/volume-average panels, trend inputs, quality flags and filterable recent signals.
+- `/lab`: latest event-study run, independent counts, matched baselines, edge, and
+  side-by-side in-sample/out-of-sample evidence. Small samples are labelled and greyed.
+- `/backtests` and `/backtests/[runId]`: saved configurations, costs, benchmark comparisons,
+  equity curves, sample comparisons and individual trades. Underperformance and sweeps are flagged.
+
+Indicator/signal queries are paginated and constrained to the selected 3-month,
+1-year or full-history date range. They load on demand; reload after recalculating
+signals. They do not use Realtime. Chart panels share zoom/pan. The live event feed
+continues to receive signals/backtest actions through its existing subscription.
 
 Missing configuration/data and connection errors have explicit empty/error
 states. Values are research data, not recommendations. Health approximates trading
@@ -38,8 +49,9 @@ days using weekdays; market holidays can trigger stale-data warnings.
 
 `npm run typecheck`, `npm run build`, `npm audit`.
 `npx playwright install chromium`, then `npm run test:e2e` tests the configured
-live project: chart navigation, mobile width, event filters, live delivery, and
-network disconnect/reconnect. The live-delivery test invokes the root Python
+live project: chart navigation, mobile width, event filters, live delivery,
+network disconnect/reconnect, overlays, signal filters, Signal Lab, and benchmark
+comparisons. The live-delivery test invokes the root Python
 environment to write one clearly named verification event; no secrets enter the
 browser. Tests need the initial watchlist ingestion completed.
 

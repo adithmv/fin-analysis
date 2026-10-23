@@ -14,7 +14,7 @@ backtest/.venv/Scripts/python.exe backtest/main.py strategy buy_and_hold --all
 backtest/.venv/Scripts/python.exe -m pytest backtest/tests -q
 ```
 
-Configuration: `config/backtest.yaml`, overridable with `--config`. Defaults are illustrative costs (0.10% fees and 0.05% slippage on each side), not verified broker charges. Every run stores the complete config, git commit, dependency versions, data hashes, signal versions, split dates and number of parameter combinations (one; no automated sweep). Missing or stale signals cause a clear failure. New runs have new IDs; identical inputs and configuration reproduce numbers. The logbook records start, loading, exclusions, computations, writes and completion/failure.
+Configuration: `config/backtest.yaml`, overridable with `--config`. Defaults are illustrative costs (0.10% fees and 0.05% slippage on each side), not verified broker charges. Every run stores the complete config, git commit, source-file hash, working-tree status, dependency versions, data hashes, signal versions, split dates and number of parameter combinations (one; no automated sweep). Missing or stale signals cause a clear failure. New runs have new IDs; identical inputs and configuration reproduce numbers. The logbook records start, loading, exclusions, computations, writes and completion/failure. Database reads retry transient transport errors up to three attempts; persistent errors fail the run.
 
 ## Timing and calculations
 
