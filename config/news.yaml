@@ -1,0 +1,18 @@
+sentiment:
+  model: ProsusAI/finbert
+  revision: 0bc2ac10dda6929bcb1f77ccc43c7ec5c424f031
+  scope: title_summary
+  batch_size: 16
+  max_tokens: 512
+  buckets: {very_negative: -0.6, negative: -0.2, positive: 0.2, very_positive: 0.6}
+embeddings:
+  model: sentence-transformers/all-MiniLM-L6-v2
+  revision: 1110a243fdf4706b3f48f1d95db1a4f5529b4d41
+  dimension: 384
+  embed_only_if_linked: true
+dedupe: {title_similarity_threshold: 0.92, window_hours: 48, version: "1.0.0"}
+linking: {min_confidence_to_store: 0.5, min_confidence_for_events: 0.7}
+processing: {linker_version: "1.0.0", events_logic_version: "1.0.0"}
+retention: {keep_raw_days: 90}
+benchmark: NIFTY50
+market_open_ist: "09:15"

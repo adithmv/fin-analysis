@@ -1,0 +1,14 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.1+cpu
+feedparser==6.0.14
+dalal==0.2.1
+bse==3.3.4
+transformers==5.20.2
+sentence-transformers==6.2.0
+rapidfuzz==3.14.6
+fastapi==0.161.1
+uvicorn==0.54.0
+langdetect==1.0.9
+PyYAML==6.0.3
+pytest==9.1.1
+tzdata==2026.5

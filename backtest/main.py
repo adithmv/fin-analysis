@@ -207,7 +207,7 @@ def execute(args):
                 client,
                 "signal_stats",
                 rows,
-                "stats_run_id,signal_key,direction,scope,sample,horizon_days",
+                "stats_run_id,signal_key,direction,scope,sample,horizon_days,abnormal",
                 batch_size=100,
             )
             count = len(rows)

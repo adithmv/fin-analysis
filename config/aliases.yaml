@@ -1,0 +1,22 @@
+RELIANCE:
+  names: [Reliance Industries, Reliance Industries Ltd]
+  aliases: [RIL, Reliance]
+  ambiguous_aliases: [Reliance]
+  context: [Mukesh Ambani, Jio, petrochemical, refinery, Jamnagar]
+  bse_code: "500325"
+TCS:
+  names: [Tata Consultancy Services]
+  aliases: [TCS]
+  bse_code: "532540"
+INFY:
+  names: [Infosys, Infosys Ltd]
+  aliases: [Infy]
+  bse_code: "500209"
+HDFCBANK:
+  names: [HDFC Bank]
+  aliases: [HDFCBANK]
+  bse_code: "500180"
+ICICIBANK:
+  names: [ICICI Bank]
+  aliases: [ICICIBANK]
+  bse_code: "532174"

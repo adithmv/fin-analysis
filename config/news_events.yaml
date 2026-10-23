@@ -1,0 +1,108 @@
+logic_version: 1.0.0
+event_types:
+  earnings_result:
+    importance: 4
+    patterns:
+    - quarterly results
+    - Q1 results
+    - Q2 results
+    - Q3 results
+    - Q4 results
+    - net profit
+    - net loss
+    - reports profit
+    - PAT
+  dividend:
+    importance: 3
+    patterns:
+    - dividend
+    - record date
+  bonus_split:
+    importance: 3
+    patterns:
+    - bonus issue
+    - stock split
+    - sub-division
+  board_meeting:
+    importance: 2
+    patterns:
+    - board meeting
+    - board to consider
+  merger_acquisition:
+    importance: 4
+    patterns:
+    - acquires
+    - acquisition
+    - merger
+    - demerger
+    - stake sale
+    - stake purchase
+  fundraise:
+    importance: 3
+    patterns:
+    - QIP
+    - rights issue
+    - preferential allotment
+    - raises
+    - NCD
+  regulatory_action:
+    importance: 4
+    patterns:
+    - SEBI order
+    - penalty
+    - show-cause
+    - probe
+    - raid
+    - 'ED '
+    - CBI
+  rating_change:
+    importance: 3
+    patterns:
+    - upgrade
+    - downgrade
+    - target price
+    - rating
+  order_win:
+    importance: 3
+    patterns:
+    - bags order
+    - wins order
+    - order worth
+    - contract worth
+  management_change:
+    importance: 3
+    patterns:
+    - resigns
+    - appoints CEO
+    - new MD
+    - CFO quits
+  macro_rbi:
+    importance: 4
+    scope: MARKET
+    patterns:
+    - RBI
+    - repo rate
+    - monetary policy
+    - MPC
+  macro_budget:
+    importance: 4
+    scope: MARKET
+    patterns:
+    - Union Budget
+    - Budget 20
+    - tax proposal
+  other:
+    importance: 1
+    patterns: []
+exchange_category_map:
+  Financial Results: earnings_result
+  Dividend: dividend
+  Board Meeting Intimation: board_meeting
+  Board Meeting: board_meeting
+  Credit Rating: rating_change
+importance:
+  trusted_tier_max: 1
+  trusted_bump: 1
+  title_bump: 0
+  coverage_min: 3
+  coverage_bump: 1
