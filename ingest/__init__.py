@@ -1,0 +1,1 @@
+"""Daily NSE ingestion module."""
