@@ -19,6 +19,7 @@ def process(client, config, aliases, rules, feeds, run_id, stage=None):
     if not rows:
         return {"articles": 0, "failed": 0}
     for r in rows:
+        r["_has_raw"] = bool(r["raw"])
         r["raw"] = {**r.get("provenance", {}), **r["raw"]}
     failed = 0
 
@@ -247,9 +248,7 @@ def process(client, config, aliases, rules, feeds, run_id, stage=None):
     cutoff = (datetime.now(timezone.utc) - timedelta(days=config["retention"]["keep_raw_days"])).isoformat()
     # Preserve compact exchange tags/category/time provenance needed for future reprocessing.
     for r in rows:
-        if r["fetched_at"] < cutoff and any(
-            k not in ("exchange_symbol", "category", "origin_exchange", "time_assumption") for k in r["raw"]
-        ):
+        if r["fetched_at"] < cutoff and r["_has_raw"]:
             retained = {
                 k: v
                 for k, v in r["raw"].items()

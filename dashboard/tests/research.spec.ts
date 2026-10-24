@@ -22,10 +22,15 @@ test("stock research loads overlays, indicators, range and signal filters", asyn
   await expect(
     page.getByText("Loading indicators for the selected dates…"),
   ).toBeHidden({ timeout: 45000 });
-  await page.getByRole("combobox", { name: "Signal type", exact: true }).selectOption("pattern");
-  await page.getByRole("combobox", { name: "Direction", exact: true }).selectOption("bullish");
+  await page
+    .getByRole("combobox", { name: "Signal type", exact: true })
+    .selectOption("pattern");
+  await page
+    .getByRole("combobox", { name: "Direction", exact: true })
+    .selectOption("bullish");
   await expect(page.locator("tbody tr").first()).toBeVisible();
   for (const text of await page
+    .getByRole("table", { name: "Recent technical signals" })
     .locator("tbody tr td:nth-child(3)")
     .allTextContents())
     expect(text).toBe("bullish");
@@ -54,7 +59,9 @@ test("signal lab exposes baseline, independent counts and both samples", async (
   await expect(page.locator("tr.insufficient").first()).toContainText(
     "Insufficient sample",
   );
-  await page.getByRole("combobox", { name: "Scope", exact: true }).selectOption("TCS");
+  await page
+    .getByRole("combobox", { name: "Scope", exact: true })
+    .selectOption("TCS");
   await page
     .getByRole("combobox", { name: "Signal", exact: true })
     .selectOption("cdl_engulfing");
@@ -92,8 +99,12 @@ test("backtest details compare strategy and benchmark with trades", async ({
   await expect(
     page.getByRole("img", { name: "Strategy equity versus buy-and-hold" }),
   ).toBeVisible();
-  await page.getByRole("combobox", { name: "Stock", exact: true }).selectOption("TCS");
-  await page.getByRole("combobox", { name: "Sample", exact: true }).selectOption("all");
+  await page
+    .getByRole("combobox", { name: "Stock", exact: true })
+    .selectOption("TCS");
+  await page
+    .getByRole("combobox", { name: "Sample", exact: true })
+    .selectOption("all");
   await expect(
     page.getByRole("columnheader", { name: "Exit reason", exact: true }),
   ).toBeVisible();

@@ -715,3 +715,89 @@ nav {
     padding: 12px;
   }
 }
+.news-item {
+  padding: 22px 26px;
+  border-bottom: 1px solid #e6ede9;
+  overflow-wrap: anywhere;
+}
+.news-item h3 {
+  font-size: 17px;
+  line-height: 1.5;
+  margin: 8px 0 12px;
+  font-weight: 600;
+}
+.news-meta {
+  font-size: 12px;
+  color: #687d75;
+}
+.news-chips {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.news-chips .small-link {
+  margin-left: auto;
+}
+.news-section {
+  padding: 26px;
+  margin-bottom: 24px;
+}
+.news-section h2 {
+  margin: 22px 0 12px;
+}
+.news-section p {
+  line-height: 1.65;
+}
+.article-title {
+  max-width: 1000px;
+  font-size: clamp(24px, 3vw, 36px);
+  line-height: 1.3;
+}
+.probability {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin: 12px 0;
+}
+.probability label {
+  width: 75px;
+}
+.probability meter {
+  flex: 1;
+  max-width: 300px;
+  height: 16px;
+}
+.search-label {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-weight: 600;
+}
+.search-label input {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #cddbd4;
+  border-radius: 8px;
+  font: inherit;
+  margin-bottom: 16px;
+}
+.sentiment-timeline {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  overflow-x: auto;
+  min-height: 125px;
+  padding: 10px 0;
+}
+.sentiment-day {
+  flex: 0 0 26px;
+  text-align: center;
+  font-size: 10px;
+}
+.sentiment-stick {
+  width: 18px;
+  margin: auto;
+  background: #229779;
+  min-height: 2px;
+}

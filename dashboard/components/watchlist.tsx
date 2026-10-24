@@ -4,7 +4,12 @@ import Link from "next/link";
 import { getBrowserClient } from "@/lib/supabase";
 import { type Candle, money, sessionDate } from "@/lib/types";
 
-type Stock = { symbol: string; exchange: string; candle: Candle | null };
+type Stock = {
+  symbol: string;
+  exchange: string;
+  kind: string;
+  candle: Candle | null;
+};
 function health(candle: Candle | null) {
   if (!candle) return { text: "No data", status: "never" };
   const last = sessionDate(candle.ts);
@@ -34,7 +39,7 @@ export function Watchlist() {
     async function load() {
       const { data, error } = await client!
         .from("watchlist")
-        .select("symbol,exchange")
+        .select("symbol,exchange,kind")
         .eq("active", true)
         .order("symbol");
       if (error) {
@@ -98,7 +103,7 @@ export function Watchlist() {
             watchlist.
           </p>
         </div>
-        <span className="connection">NSE · {stocks.length} stocks</span>
+        <span className="connection">NSE · {stocks.length} instruments</span>
       </div>
       {error && (
         <div className="error" role="alert">
@@ -142,7 +147,10 @@ export function Watchlist() {
                           className="stock-symbol"
                           href={`/stocks/${encodeURIComponent(stock.symbol)}`}
                         >
-                          {stock.symbol} ↗<small>{stock.exchange} equity</small>
+                          {stock.symbol} ↗
+                          <small>
+                            {stock.exchange} {stock.kind}
+                          </small>
                         </Link>
                       </td>
                       <td className="price">

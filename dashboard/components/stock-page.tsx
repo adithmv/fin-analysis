@@ -5,8 +5,32 @@ import { ResearchChart } from "./research-chart";
 import { getBrowserClient } from "@/lib/supabase";
 import { type Candle, money, sessionDate } from "@/lib/types";
 import { EventFeed } from "./event-feed";
+import { Article, CorporateAction, articles, titleCase } from "@/lib/news";
+import { readResearch } from "@/lib/research";
+import { StockNews, ChartEvent } from "./stock-news";
 
 export function StockPage({ symbol }: { symbol: string }) {
+  const [news, setNews] = useState<Article[]>([]),
+    [actions, setActions] = useState<CorporateAction[]>([]);
+  useEffect(() => {
+    let active = true;
+    void Promise.all([
+      articles(),
+      readResearch<CorporateAction>("corporate_actions", ["symbol", symbol]),
+    ])
+      .then(([n, a]) => {
+        if (active) {
+          setNews(n);
+          setActions(a);
+        }
+      })
+      .catch((e) => {
+        if (active) setError(String(e.message));
+      });
+    return () => {
+      active = false;
+    };
+  }, [symbol]);
   const [candles, setCandles] = useState<Candle[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -71,6 +95,31 @@ export function StockPage({ symbol }: { symbol: string }) {
     };
   }, [symbol]);
   const last = candles.at(-1);
+  const chartEvents: ChartEvent[] = [
+    ...actions
+      .filter((a) => a.ex_date)
+      .map((a) => ({
+        date: a.ex_date!,
+        text: `${titleCase(a.action_type)}: ${a.ratio_text} (${a.parse_status})`,
+        kind: "action" as const,
+      })),
+    ...news
+      .filter((a) => !a.is_duplicate)
+      .flatMap((a) =>
+        a.news_events
+          .filter(
+            (e) =>
+              e.symbol === symbol &&
+              e.importance >= 4 &&
+              e.effective_trading_date,
+          )
+          .map((e) => ({
+            date: e.effective_trading_date!,
+            text: `${titleCase(e.event_type)}: ${a.title}`,
+            kind: "news" as const,
+          })),
+      ),
+  ];
   return (
     <div className="page">
       <Link className="back" href="/stocks">
@@ -78,7 +127,9 @@ export function StockPage({ symbol }: { symbol: string }) {
       </Link>
       <div className="heading">
         <div>
-          <div className="eyebrow">NSE / EQUITY / DAILY</div>
+          <div className="eyebrow">
+            NSE / {symbol === "NIFTY50" ? "INDEX" : "EQUITY"} / DAILY
+          </div>
           <h1>{symbol}</h1>
           <p className="subtitle">
             Price history with a clear record of where it came from.
@@ -120,7 +171,11 @@ export function StockPage({ symbol }: { symbol: string }) {
                   <strong>{last.source}</strong>
                 </div>
               </div>
-              <ResearchChart candles={candles} symbol={symbol} />
+              <ResearchChart
+                candles={candles}
+                symbol={symbol}
+                events={chartEvents}
+              />
               <p className="attribution">
                 {last.adjusted
                   ? "Split-adjusted source data."
@@ -143,6 +198,7 @@ export function StockPage({ symbol }: { symbol: string }) {
           </p>
         </div>
       </section>
+      <StockNews rows={news} actions={actions} symbol={symbol} />
       <EventFeed symbol={symbol} />
     </div>
   );

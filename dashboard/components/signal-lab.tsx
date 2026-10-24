@@ -20,8 +20,13 @@ type Stat = {
   sufficient_sample: boolean;
   config: Record<string, unknown>;
   computed_at: string;
+  abnormal: boolean;
+  mean_abs_return: number | null;
+  baseline_mean_abs: number | null;
 };
 export function SignalLab() {
+  const [source, setSource] = useState("technical"),
+    [adjusted, setAdjusted] = useState("false");
   const [rows, setRows] = useState<Stat[]>([]),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true);
@@ -31,12 +36,21 @@ export function SignalLab() {
     [sample, setSample] = useState("out_of_sample");
   useEffect(() => {
     let active = true;
+    setLoading(true);
+    setError("");
+    setRows([]);
+    setSignal("");
     async function load() {
       const client = getBrowserClient();
       if (!client) throw new Error("Database connection unavailable");
-      const { data, error } = await client
-        .from("signal_stats")
-        .select("stats_run_id")
+      let query = client.from("signal_stats").select("stats_run_id");
+      query =
+        source === "technical"
+          ? query
+              .not("signal_key", "like", "news:%")
+              .not("signal_key", "like", "sentiment:%")
+          : query.like("signal_key", `${source}:%`);
+      const { data, error } = await query
         .order("computed_at", { ascending: false })
         .limit(1);
       if (error) throw error;
@@ -58,13 +72,14 @@ export function SignalLab() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [source]);
   const filtered = rows.filter(
     (r) =>
       (!signal || r.signal_key === signal) &&
       (!scope || r.scope === scope) &&
       (!horizon || r.horizon_days === Number(horizon)) &&
-      r.sample === sample,
+      r.sample === sample &&
+      r.abnormal === (adjusted === "true"),
   );
   const counterpart = (r: Stat, s: string) =>
     rows.find(
@@ -73,6 +88,7 @@ export function SignalLab() {
         x.direction === r.direction &&
         x.scope === r.scope &&
         x.horizon_days === r.horizon_days &&
+        x.abnormal === r.abnormal &&
         x.sample === s,
     );
   return (
@@ -110,6 +126,32 @@ export function SignalLab() {
       </p>
       <section className="panel">
         <div className="filters">
+          <label>
+            Study source
+            <select
+              value={source}
+              onChange={(e) => {
+                setSource(e.target.value);
+                setAdjusted("false");
+              }}
+            >
+              <option value="technical">Technical signals</option>
+              <option value="news">News events</option>
+              <option value="sentiment">Sentiment buckets</option>
+            </select>
+          </label>
+          {source !== "technical" && (
+            <label>
+              Market adjustment
+              <select
+                value={adjusted}
+                onChange={(e) => setAdjusted(e.target.value)}
+              >
+                <option value="false">Unadjusted returns</option>
+                <option value="true">Abnormal · minus NIFTY 50</option>
+              </select>
+            </label>
+          )}
           <label>
             Signal
             <select value={signal} onChange={(e) => setSignal(e.target.value)}>
@@ -165,6 +207,8 @@ export function SignalLab() {
                   "Win rate",
                   "Baseline",
                   "Edge",
+                  "Absolute move",
+                  "Baseline absolute move",
                   "IS edge / n",
                   "OOS edge / n",
                 ].map((h) => (
@@ -195,6 +239,8 @@ export function SignalLab() {
                   <td>{pct(r.win_rate)}</td>
                   <td>{pct(r.baseline_mean)}</td>
                   <td>{pct(r.edge)}</td>
+                  <td>{pct(r.mean_abs_return)}</td>
+                  <td>{pct(r.baseline_mean_abs)}</td>
                   {["in_sample", "out_of_sample"].map((s) => {
                     const other = counterpart(r, s);
                     return (

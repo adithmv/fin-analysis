@@ -7,7 +7,9 @@ import {
   createChart,
   createSeriesMarkers,
   type Time,
+  type SeriesMarker,
 } from "lightweight-charts";
+import type { ChartEvent } from "./stock-news";
 import { getBrowserClient } from "@/lib/supabase";
 import { type Candle, sessionDate } from "@/lib/types";
 
@@ -25,9 +27,11 @@ type Signal = {
 export function ResearchChart({
   candles,
   symbol,
+  events,
 }: {
   candles: Candle[];
   symbol: string;
+  events: ChartEvent[];
 }) {
   const [range, setRange] = useState("252");
   const [indicators, setIndicators] = useState<Indicator[]>([]);
@@ -156,17 +160,29 @@ export function ResearchChart({
         .setData(points(key)),
     );
     const patterns = signals.filter((s) => s.signal_type === "pattern");
-    createSeriesMarkers(
-      price,
-      patterns.map((s) => ({
-        time: sessionDate(s.ts) as Time,
-        position: s.direction === "bearish" ? "aboveBar" : "belowBar",
-        color: s.direction === "bearish" ? "#be535c" : "#22856a",
-        shape: s.direction === "bearish" ? "arrowDown" : "arrowUp",
-        text: "",
-        size: 0.5,
+    const eventMarkers = events.filter((e) =>
+      visible.some((c) => sessionDate(c.ts) === e.date),
+    );
+    const markers: SeriesMarker<Time>[] = patterns.map((s) => ({
+      time: sessionDate(s.ts) as Time,
+      position: s.direction === "bearish" ? "aboveBar" : "belowBar",
+      color: s.direction === "bearish" ? "#be535c" : "#22856a",
+      shape: s.direction === "bearish" ? "arrowDown" : "arrowUp",
+      text: "",
+      size: 0.5,
+    }));
+    markers.push(
+      ...eventMarkers.map((e) => ({
+        time: e.date as Time,
+        position: "aboveBar" as const,
+        color: e.kind === "action" ? "#ca8b25" : "#5666b5",
+        shape: "circle" as const,
+        text: e.kind === "action" ? "CA" : "N",
+        size: 0.6,
       })),
     );
+    markers.sort((a, b) => String(a.time).localeCompare(String(b.time)));
+    createSeriesMarkers(price, markers);
     charts[0].subscribeCrosshairMove((param) => {
       const found = patterns.filter((s) => sessionDate(s.ts) === param.time);
       setHover(
@@ -174,6 +190,11 @@ export function ResearchChart({
           .map(
             (s) =>
               `${s.description} · Trend: ${String(s.details.trend_state ?? "unknown")}`,
+          )
+          .concat(
+            eventMarkers
+              .filter((e) => e.date === param.time)
+              .map((e) => e.text),
           )
           .join(" | "),
       );
@@ -242,7 +263,7 @@ export function ResearchChart({
     return () => charts.forEach((c) => c.remove());
     // The selected date range controls all on-demand database reads.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [candles, range, indicators, signals, overlays]);
+  }, [candles, range, indicators, signals, overlays, events]);
   const trend = signals.filter((s) => s.signal_key === "trend_state").at(-1);
   const flags = [
     ...new Set(
@@ -320,7 +341,8 @@ export function ResearchChart({
         aria-label={`${visible.length} daily candlesticks with indicator overlays and pattern markers`}
       />
       <p className="marker-tooltip" role="status">
-        {hover || "Hover a pattern arrow to see its description and trend."}
+        {hover ||
+          "Hover a marker: arrows are patterns, CA corporate actions, N high-importance news."}
       </p>
       <div className="indicator-title">RSI · 30 / 70 reference levels</div>
       <div
@@ -368,7 +390,7 @@ export function ResearchChart({
         </label>
       </div>
       <div className="research-scroll">
-        <table>
+        <table aria-label="Recent technical signals">
           <thead>
             <tr>
               <th>Date</th>

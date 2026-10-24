@@ -1,7 +1,7 @@
 # Indian Market Research
 
 Personal, read-only NSE stock research. Daily price ingestion, an action logbook,
-technical signals, event studies, strategy backtests, and a live dashboard.
+technical signals, news and semantic memory, event studies, strategy backtests, and a live dashboard.
 No order placement or LLMs.
 
 See [PHASE_1.md](PHASE_1.md) for the specification and
@@ -16,7 +16,8 @@ and pushed to GitHub.
 Python modules cooperate through database tables, importing only `shared`.
 `ingest` writes candles, `signals` derives indicators and dated signals,
 `backtest` measures their historical results, and `dashboard` displays the tables.
-`logbook` reads the shared action events. Later phases add news and research agents.
+`news` collects and processes public headlines locally. `logbook` reads the shared action events.
+Phase 4 adds research agents; its specification is in `PHASE_4.md`.
 
 All displayed findings are analysis for research, not investment recommendations.
 
@@ -33,7 +34,7 @@ python -m venv .venv
 Copy-Item .env.example .env
 ```
 
-Apply the three files in `db/migrations/` in numeric order to a new Supabase project. Fill root `.env`
+Apply the files in `db/migrations/` in numeric order to a new Supabase project. Fill root `.env`
 with its URL, Python secret key, and public dashboard key. Never commit `.env`.
 Copy only the two `NEXT_PUBLIC_` settings to `dashboard/.env.local`.
 
@@ -70,6 +71,11 @@ Stock pages now show overlays and signals. `/lab` compares event returns with
 baselines; `/backtests` compares strategies with buy-and-hold. All are read-only.
 
 ## Verification commands
+
+Phase 3 setup and commands are in [news/README.md](news/README.md). Start its local
+memory service for `/search` and similar-event panels. The dashboard also adds
+`/news`, `/sources`, stock sentiment and corporate actions, and news/sentiment Lab studies.
+Human accuracy review of the exported 100-item sample remains pending at the user's request.
 
 ```powershell
 .venv\Scripts\python.exe -m pytest -q

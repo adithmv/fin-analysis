@@ -26,6 +26,15 @@ export default function RootLayout({
           </Link>
           <div className="nav-label">WORKSPACE</div>
           <nav>
+            <Link href="/news">
+              ▤ <span>News archive</span>
+            </Link>
+            <Link href="/search">
+              ⌕ <span>Search stories</span>
+            </Link>
+            <Link href="/sources">
+              ◌ <span>Source health</span>
+            </Link>
             <Link href="/">
               ◉ <span>Live activity</span>
             </Link>
@@ -49,7 +58,7 @@ export default function RootLayout({
               <br />
               Every action, accounted for.
             </p>
-            <span className="phase">PHASE 02 / SIGNALS & EVIDENCE</span>
+            <span className="phase">PHASE 03 / NEWS & MEMORY</span>
           </div>
         </aside>
         <main className="workspace">

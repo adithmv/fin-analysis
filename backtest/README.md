@@ -29,3 +29,21 @@ Short history, gaps, and windows around suspected splits are excluded. A positio
 ## Interpretation
 
 A positive edge in both samples, with sufficient independent evidence across several stocks, is a hypothesis worth watching. One positive stock/horizon with a small sample is likely noise. Good in-sample and weak out-of-sample results suggest fitting to the past. These are historical results on a small watchlist, not predictions or advice. Finding no edge is useful. Changing parameters after viewing out-of-sample results makes that sample part of the research process; reserve fresh data for confirmation.
+# Phase 3 event sources
+
+`events --source news` and `events --source sentiment` read only stored tables.
+Use `--event-type earnings_result` to narrow news studies. Canonical story groups,
+known timestamps and links with at least the configured confidence are mandatory.
+Entries are at the effective session open, exits at close h-1 sessions later.
+Phase 2 split/gap/warm-up exclusions and chronological samples remain in force.
+Independent entries are spaced more than h sessions, conservatively matching Phase 2.
+
+Signed returns include fees/slippage. Abnormal rows subtract the signed NIFTY 50
+gross return over exactly the same entry/exit dates; every stock session must be
+present in the index. Absolute moves are **before costs**, based on the raw stock
+move (or raw stock minus index move), so directionless news can be studied as
+volatility. Baselines use the same eligible windows, direction, costs and adjustment.
+Pooled baselines are weighted by independent event count, and correlated stocks
+are not independent market experiments. Config, source/input hashes, model/rule
+versions and number of tested key/horizon/adjustment combinations are saved.
+
