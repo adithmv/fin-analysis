@@ -1,8 +1,8 @@
 # Indian Market Research
 
-Personal, read-only NSE stock research. Daily price ingestion, an action logbook,
-technical signals, news and semantic memory, event studies, strategy backtests, and a live dashboard.
-No order placement or LLMs.
+Personal NSE stock research with read-only market analysis. Daily price ingestion, an action logbook,
+technical signals, news and semantic memory, event studies, strategy backtests, evidence-linked Gemini discussions, and a live dashboard.
+No order placement.
 
 See [PHASE_1.md](PHASE_1.md) for the specification and
 [docs/VERIFICATION.md](docs/VERIFICATION.md) for Phase 1 verification. Phase 2 is
