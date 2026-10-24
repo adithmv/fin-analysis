@@ -120,11 +120,7 @@ def build_report(output, verification, pack, config, messages):
         m.get("_verification", {}).get("severe") for m in messages
     )
     # Unverified free prose is withheld from the final report, even when some structured facts pass.
-    summary = (
-        output.content_md
-        if verification["status"] == "verified"
-        else "\n".join(c.text for c in factual) or "No verified factual summary is available."
-    )
+    summary = "\n".join(c.text for c in factual) or "No verified factual summary is available."
     return dict(
         symbol=pack["symbol"],
         as_of_date=pack["latest_session"][:10],

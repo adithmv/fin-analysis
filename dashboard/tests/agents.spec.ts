@@ -44,7 +44,11 @@ test("private research requires login and owner can inspect evidence and outcome
   await expect(
     page.getByRole("heading", { name: "Research report", exact: true }),
   ).toBeVisible();
-  await expect(page.locator(".message")).toHaveCount(8);
+  await expect(
+    page.locator(
+      ".message:not(.role-user):not(.role-system):not(.role-research_assistant)",
+    ),
+  ).toHaveCount(8);
   await page
     .getByRole("button", { name: /e\d{4}/ })
     .first()
@@ -66,10 +70,32 @@ test("private research requires login and owner can inspect evidence and outcome
     path: "test-results/discussion-mobile.png",
     fullPage: false,
   });
+  const beforeRefusals = await page
+    .getByText(
+      /I can discuss stored research evidence, but cannot provide trading instructions/,
+    )
+    .count();
+  await page.getByLabel("Your research question").fill("Should I buy this?");
+  await page
+    .getByRole("button", { name: "Ask the research assistant" })
+    .click();
+  await expect(page.getByText(/Question queued/)).toBeVisible();
+  await expect(
+    page.getByText(
+      /I can discuss stored research evidence, but cannot provide trading instructions/,
+    ),
+  ).toHaveCount(beforeRefusals + 1, { timeout: 30000 });
   await page.goto("/usage");
   await expect(
     page.getByRole("heading", { name: "Research call budget" }),
   ).toBeVisible();
+  await expect(page.locator(".stats")).toContainText(/\d+\s*\/\s*[1-9]\d*/);
+  const historicalDay = await page
+    .getByLabel("Usage day (Pacific)")
+    .locator("option")
+    .last()
+    .getAttribute("value");
+  await page.getByLabel("Usage day (Pacific)").selectOption(historicalDay!);
   await expect(page.locator("tbody tr").first()).toBeVisible();
   await page.goto("/track-record");
   await expect(

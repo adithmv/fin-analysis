@@ -36,6 +36,11 @@ export function ReportCard({ report: r }: { report: Report }) {
         </p>
       )}
       <p className="message-text">{r.summary_md}</p>
+      <p className="attribution">
+        The stance, confidence and evidence-strength badges above are set by
+        code. Narrative interpretation is not independently verified; inspect
+        the structured claims below.
+      </p>
       {(["key_points", "risks", "invalidation"] as const).map((key) => (
         <div key={key}>
           <h3>{titleCase(key)}</h3>
@@ -239,6 +244,7 @@ export function ThreadDetail({ id }: { id: string }) {
                   <span
                     className={`badge ${m.verification_status === "verified" ? "success" : m.verification_status === "unverified" ? "failed" : "warning"}`}
                   >
+                    {m.author_type === "agent" ? "Claims: " : ""}
                     {titleCase(m.verification_status)}
                   </span>
                 </div>
@@ -253,9 +259,10 @@ export function ThreadDetail({ id }: { id: string }) {
                 >
                   {m.content_md}
                 </p>
-                {["partial", "unverified"].includes(m.verification_status) && (
+                {m.author_type === "agent" && (
                   <small>
-                    Some prose has not been verified. Check the claim-by-claim
+                    Verification labels apply to structured claims. Narrative
+                    interpretation is not checked. Inspect the claim-by-claim
                     evidence below.
                   </small>
                 )}

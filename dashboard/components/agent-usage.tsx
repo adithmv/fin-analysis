@@ -19,6 +19,7 @@ export function AgentUsage() {
   const { loggedIn, ready } = useLogin();
   const [rows, R] = useState<Call[]>([]),
     [limit, L] = useState(0),
+    [selectedDay, D] = useState(""),
     [error, E] = useState("");
   useEffect(() => {
     if (!loggedIn) return;
@@ -64,6 +65,13 @@ export function AgentUsage() {
     day: "2-digit",
   }).format(new Date());
   const today = rows.filter((r) => r.budget_day === day);
+  const viewedDay = selectedDay || day;
+  const days = [...new Set([day, ...rows.map((r) => r.budget_day)])]
+    .sort()
+    .reverse();
+  const visible = rows
+    .filter((r) => r.budget_day === viewedDay)
+    .sort((a, b) => b.reserved_at.localeCompare(a.reserved_at));
   return (
     <div className="page">
       <div className="eyebrow">MODEL USAGE / APPLICATION LIMITS</div>
@@ -106,6 +114,23 @@ export function AgentUsage() {
         </p>
       )}
       {error && <p className="error">{error}</p>}
+      <label className="search-label">
+        Usage day (Pacific)
+        <select value={viewedDay} onChange={(e) => D(e.target.value)}>
+          {days.map((d) => (
+            <option key={d} value={d}>
+              {d}
+              {d === day ? " · today" : ""}
+            </option>
+          ))}
+        </select>
+      </label>
+      {!visible.length && (
+        <p className="empty">
+          No recorded attempts for this budget day. Choose an earlier day to
+          inspect previous calls.
+        </p>
+      )}
       <section className="panel research-scroll">
         <table>
           <thead>
@@ -123,7 +148,7 @@ export function AgentUsage() {
             </tr>
           </thead>
           <tbody>
-            {[...today].reverse().map((r) => (
+            {visible.map((r) => (
               <tr key={r.id}>
                 <td>{dateTime(r.reserved_at)}</td>
                 <td>{r.role.replaceAll("_", " ")}</td>

@@ -45,6 +45,8 @@ def guard(table, row, cutoff):
         fields.append("computed_at")
     if table == "signal_stats":
         fields.append("period_end")
+    if table == "report_outcomes":
+        fields.append("exit_date")
     for field in fields:
         if field and row.get(field) and instant(row[field]) > cutoff:
             raise FutureData(f"{table}.{field} after cutoff")

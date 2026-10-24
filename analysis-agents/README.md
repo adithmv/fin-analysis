@@ -76,4 +76,4 @@ backtest/.venv/Scripts/python.exe -m pytest backtest/tests -q
 npm run test:e2e --prefix dashboard
 ```
 
-The browser checks use configured local owner credentials, never commit them, and make no Gemini calls. Live acceptance runs are separate from automated tests. Verification findings and remaining work are recorded in `docs/PHASE_4_VERIFICATION.md`.
+The browser checks use configured local owner credentials, never commit them, and make no Gemini calls. The local `serve` worker must be running: the form check submits a clearly testable trade-advice question and verifies the deterministic refusal. This retains two private messages per run. Live acceptance runs are separate from automated tests. Verification findings and remaining work are recorded in `docs/PHASE_4_VERIFICATION.md`.

@@ -70,6 +70,7 @@ def output(**kw):
         ("signals", "ts"),
         ("signal_stats", "period_end"),
         ("report_outcomes", "graded_at"),
+        ("report_outcomes", "exit_date"),
         ("articles", "published_at"),
         ("articles", "fetched_at"),
         ("news_events", "published_at"),
