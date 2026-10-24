@@ -10,6 +10,7 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install -r requirements-lock.txt -e ./shared
       - run: python -m pytest -q
+      - run: python -m pytest ops/tests -q
       - run: ruff check shared ingest logbook scripts
   dashboard:
     runs-on: ubuntu-latest
@@ -39,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: [signals, backtest, analysis-agents]
+        module: [signals, backtest, analysis-agents, scheduler, alerts]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -47,3 +48,15 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install -r ${{ matrix.module }}/requirements-lock.txt -e ./shared
       - run: python -m pytest ${{ matrix.module }}/tests -q
+  browser:
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/browser-agent/.venv/browsers
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r browser-agent/requirements-lock.txt -e ./shared
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m pytest browser-agent/tests -q

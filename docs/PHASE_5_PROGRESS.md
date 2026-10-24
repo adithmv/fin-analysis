@@ -34,6 +34,18 @@ Updated 2026-10-24. Phase 5 is in progress, not accepted as complete.
 
 ## Pending
 
+Twenty browser tests passed, including a real Chromium context with intercepted
+fixture responses, external-link denial and disabled script/subresource requests.
+The browser collector now has a guarded deterministic recipe path, isolated browser
+contexts, shared page budgets and text-hash deduplication. All live sites remain
+disabled; candidate selectors are not commissioned. AI navigation, PDF integration
+and downstream document ingestion remain unfinished.
+
+Backup tooling and `ops/RUNBOOK.md` are prepared. Four offline tests verify password
+handling, repository exclusion, second-copy checksums, config export without secrets,
+and failure without a success manifest. No real dump, cloud receipt or restore has
+been verified. Backup retention does not delete files yet.
+
 Telegram credentials/delivery test, remaining health rules, browser guard and source review,
 remaining operations views, human adjustment approval and rerun of studies, backups and actual restore,
 retention dry-run review, security/dependency/history scans, expanded CI,
