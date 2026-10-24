@@ -6,6 +6,7 @@ import sys
 import time
 from contextlib import contextmanager
 from types import SimpleNamespace
+from uuid import UUID
 import httpx
 
 from .db import get_client
@@ -62,7 +63,7 @@ def log_event(
     try:
         row = sanitize(
             dict(
-                run_id=str(run_id),
+                run_id=str(UUID(os.environ["RUN_ID"])) if os.environ.get("RUN_ID") else str(run_id),
                 module=module,
                 action=action,
                 status=status,

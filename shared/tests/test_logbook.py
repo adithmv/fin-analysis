@@ -64,3 +64,12 @@ def test_bulk_upsert_batches_and_propagates_errors():
     client.table().upsert().execute.side_effect = RuntimeError("db offline")
     with pytest.raises(RuntimeError):
         bulk_upsert(client, "candles", [{"id": 0}], "id")
+
+
+def test_scheduler_run_id_links_all_child_events(client, monkeypatch):
+    scheduled = str(uuid4())
+    monkeypatch.setenv("RUN_ID", scheduled)
+    assert logbook.log_event(uuid4(), "ingest", "run_start", "started")
+    assert client.table().insert.call_args.args[0]["run_id"] == scheduled
+    monkeypatch.setenv("RUN_ID", "invalid")
+    assert not logbook.log_event(uuid4(), "ingest", "run_start", "started")

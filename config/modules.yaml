@@ -1,0 +1,29 @@
+ingest:
+  directory: ingest
+  timeout_seconds: 1800
+  args_by_kind:
+    all: [--all]
+signals:
+  directory: signals
+  timeout_seconds: 1200
+  args_by_kind:
+    all: [--all]
+news:
+  directory: news
+  timeout_seconds: 3600
+  args_by_kind:
+    fetch: [fetch]
+    process: [process]
+    announcements: [announcements]
+    corporate-actions: [corporate-actions]
+analysis-agents:
+  directory: analysis-agents
+  timeout_seconds: 7200
+  args_by_kind:
+    daily: [run, --all]
+    requests: [serve, --once]
+backtest:
+  directory: backtest
+  timeout_seconds: 1800
+  args_by_kind:
+    grade-reports: [grade-reports]

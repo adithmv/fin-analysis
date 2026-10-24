@@ -1,0 +1,33 @@
+timezone: Asia/Kolkata
+# Enable each pipeline only after its Phase 5 prerequisites pass verification.
+pipelines:
+  daily_close:
+    enabled: false
+    cron: "0 17 * * *"
+    catchup_minutes: 2160
+    trading_days_only: true
+    stages:
+      - {name: ingest, module: ingest, kind: all}
+      - {name: signals, module: signals, kind: all, after: [ingest]}
+      - {name: fetch, module: news, kind: fetch}
+      - {name: news, module: news, kind: process, after: [fetch]}
+      - {name: agents, module: analysis-agents, kind: daily, after: [signals, news]}
+      - {name: grade, module: backtest, kind: grade-reports, after: [ingest]}
+  news_poll:
+    enabled: false
+    cron: "*/30 6-23 * * *"
+    catchup_minutes: 30
+    stages:
+      - {name: fetch, module: news, kind: fetch}
+  announcements:
+    enabled: false
+    cron: "15 * * * 1-5"
+    catchup_minutes: 60
+    stages:
+      - {name: announcements, module: news, kind: announcements}
+  corporate_actions:
+    enabled: false
+    cron: "0 7 * * *"
+    catchup_minutes: 1440
+    stages:
+      - {name: actions, module: news, kind: corporate-actions}
