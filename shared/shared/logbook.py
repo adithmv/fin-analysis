@@ -57,6 +57,7 @@ def log_event(
     meta=None,
     tokens_in=None,
     tokens_out=None,
+    return_id=False,
 ):
     try:
         row = sanitize(
@@ -86,7 +87,7 @@ def log_event(
             row["error"] = str(row["error"])[:2000]
         for attempt in range(3):
             try:
-                get_client().table("agent_events").insert(row).execute()
+                response = get_client().table("agent_events").insert(row).execute()
                 break
             except (httpx.ConnectError, httpx.ConnectTimeout):
                 # Connection setup failed before sending the insert. Do not retry
@@ -94,7 +95,7 @@ def log_event(
                 if attempt == 2:
                     raise
                 time.sleep(0.5 * 2**attempt)
-        return True
+        return response.data[0]["id"] if return_id and response.data else True
     except Exception:
         # Do not print database exceptions: they can contain authentication headers.
         try:

@@ -1,0 +1,1 @@
+Build the final research view using only the supplied verified/partial claims and original evidence. List excluded_claims from withheld earlier claims. Provide key_points, risks and observable invalidation conditions. Give your own claims exact evidence IDs. Low confidence and neutral/mixed stance are often appropriate. Code will compute evidence strength independently.

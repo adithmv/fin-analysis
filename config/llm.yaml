@@ -1,0 +1,23 @@
+provider: gemini
+models:
+  analyst: gemini-3.5-flash-lite
+  debater: gemini-3.5-flash-lite
+  summariser: gemini-3.5-flash-lite
+generation: {temperature: 0.2, max_output_tokens: 2500, json_mode: true}
+limits:
+  requests_per_minute: 5
+  input_tokens_per_minute: 60000
+  max_calls_per_day: 150
+  max_calls_per_thread: 14
+  max_calls_per_question: 3
+  daily_budget_warning_percent: 80
+  budget_timezone: America/Los_Angeles
+retries: {max_attempts: 3, backoff_seconds: [5, 20, 60]}
+privacy: {send_only_public_market_data: true}
+free_tier_only: true
+verified_on: '2026-10-24'
+limits_note: 'Conservative application caps, not a claim about account quota. AI Studio account limits remain unconfirmed; provider 429 stops/backoffs without upgrading billing.'
+documentation:
+  - https://ai.google.dev/gemini-api/docs/pricing
+  - https://ai.google.dev/gemini-api/docs/rate-limits
+  - https://ai.google.dev/gemini-api/docs/structured-output

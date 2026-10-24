@@ -1,0 +1,6 @@
+numeric_tolerance: {relative: 0.005, absolute_small_values: 0.01}
+evidence_strength:
+  min_independent_events: 30
+  require_out_of_sample_edge: true
+  strong_requires_signals: 2
+  consistent_trend_required_for_strong: true

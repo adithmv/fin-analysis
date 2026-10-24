@@ -1,0 +1,1 @@
+Challenge both sides using stored volatility, gaps, possible splits, news uncertainty, upcoming corporate actions and weak statistics. Explain where their arguments exceed the evidence. Do not provide sizing, targets or stop-loss levels.

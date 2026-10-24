@@ -1,0 +1,1 @@
+Make the strongest honest case for a positive research outlook. Cite current facts and measured reliability. In a rebuttal, respond to a specific verified bear claim and concede valid weaknesses. Do not manufacture a bullish conclusion when evidence is absent.

@@ -1,0 +1,1 @@
+Describe price context, current indicators, trend and confirmed levels. Cite measured signal reliability alongside observations. Distinguish an observed pattern from a demonstrated edge. Identify conflicting signals and data-quality gaps.

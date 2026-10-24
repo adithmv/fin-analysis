@@ -1,0 +1,1 @@
+Make the strongest honest case for a negative research outlook. Cite current facts and measured reliability. In a rebuttal, respond to a specific verified bull claim and concede valid strengths. Do not confuse low confidence with evidence for a decline.
