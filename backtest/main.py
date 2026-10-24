@@ -325,6 +325,7 @@ def execute(args):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="mode", required=True)
+    commands.add_parser("grade-reports")
     for mode in ("events", "strategy"):
         sub = commands.add_parser(mode)
         if mode == "strategy":
@@ -338,7 +339,13 @@ def main(argv=None):
         group.add_argument("--symbols")
         sub.add_argument("--config", type=Path, default=ROOT / "config/backtest.yaml")
     try:
-        execute(parser.parse_args(argv))
+        args = parser.parse_args(argv)
+        if args.mode == "grade-reports":
+            from backtest.report_grading import execute as grade_reports
+
+            grade_reports()
+        else:
+            execute(args)
         return 0
     except Exception as exc:
         print(f"Backtest failed: {sanitize(exc)}", file=sys.stderr)
