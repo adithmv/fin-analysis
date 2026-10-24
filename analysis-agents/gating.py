@@ -1,4 +1,5 @@
 from datetime import timedelta
+from zoneinfo import ZoneInfo
 from data.asof_db import instant
 
 
@@ -7,8 +8,8 @@ def decide(pack, config, force=False):
     cutoff = instant(pack["cutoff"])
     latest = instant(pack["latest_session"])
     weekdays = 0
-    day = latest.date()
-    while day < cutoff.date():
+    day = latest.astimezone(ZoneInfo("Asia/Kolkata")).date()
+    while day < cutoff.astimezone(ZoneInfo("Asia/Kolkata")).date():
         day += timedelta(days=1)
         weekdays += day.weekday() < 5
     if weekdays > cfg["stale_data_max_trading_days"]:

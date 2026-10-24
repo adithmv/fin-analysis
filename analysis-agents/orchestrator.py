@@ -37,6 +37,8 @@ def write_message(client, thread_id, messages, role, content, **fields):
 
 def run(client, provider, config, symbol, force=False, as_of=None, on_demand=False):
     cutoff = instant(as_of) if as_of else datetime.now(timezone.utc)
+    if cutoff > datetime.now(timezone.utc):
+        raise ValueError("Research cutoff cannot be in the future")
     day = cutoff.astimezone(ZoneInfo("Asia/Kolkata")).date().isoformat()
     kind = "on_demand" if on_demand else "daily"
     existing = (
@@ -210,6 +212,16 @@ def answer(client, provider, config, request):
         "research_assistant",
         output.content_md,
         claims=[c.model_dump() for c in output.claims],
+        stance=output.stance,
+        confidence=output.confidence,
+        evidence=[
+            dict(
+                evidence_id=c.evidence_id,
+                **next(i["ref"] for i in pack["items"] if i["evidence_id"] == c.evidence_id),
+            )
+            for c in output.claims
+            if c.evidence_id and any(i["evidence_id"] == c.evidence_id for i in pack["items"])
+        ],
         verification_status=checked["status"],
         verification_notes=[*checked["claims"], *checked["notes"]],
         llm_model=model,

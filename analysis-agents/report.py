@@ -41,15 +41,17 @@ def strength(pack, cited, stance, horizon, config):
             and r["direction"] == direction
             and not r.get("abnormal")
         ]
-        good = {
-            r["sample"]: r
-            for r in relevant
-            if r["sufficient_sample"]
-            and r["n_independent"] >= config["min_independent_events"]
-            and r["edge"] is not None
-            and float(r["edge"]) > 0
-        }
-        if "in_sample" in good and "out_of_sample" in good:
+        good = {}
+        for r in relevant:
+            if (
+                r.get("stats_run_id")
+                and r["sufficient_sample"]
+                and r["n_independent"] >= config["min_independent_events"]
+                and r["edge"] is not None
+                and float(r["edge"]) > 0
+            ):
+                good.setdefault(r["stats_run_id"], set()).add(r["sample"])
+        if any({"in_sample", "out_of_sample"} <= samples for samples in good.values()):
             qualified.append(key)
             reasons.append(f"{key}: sufficient independent evidence and positive IS/OOS edge")
     if not qualified:
@@ -77,6 +79,13 @@ def build_report(output, verification, pack, config, messages):
     accepted = {r["claim_id"] for r in verification["claims"] if r["status"] in ("verified", "partial")}
     factual = [c for c in output.claims if c.id in accepted]
     stance = output.stance
+    directions = {
+        i["row"].get("direction")
+        for i in pack["items"]
+        if i["section"] == "signals" and i["evidence_id"] in {c.evidence_id for c in factual}
+    }
+    if {"bullish", "bearish"} <= directions:
+        stance = "mixed"
     if len(factual) < 2 or verification["severe"] or verification["notes"]:
         stance = "neutral"
     cited = {c.evidence_id for c in factual if c.evidence_id}
@@ -127,6 +136,20 @@ def build_report(output, verification, pack, config, messages):
             "previous_stance": previous["stance"] if previous else None,
             "current_stance": stance,
             "latest_session": pack["latest_session"],
+            "new_signals": [
+                i["evidence_id"]
+                for i in pack["items"]
+                if previous
+                and i["section"] == "signals"
+                and i["row"].get("computed_at", "") > previous["created_at"]
+            ],
+            "new_events": [
+                i["evidence_id"]
+                for i in pack["items"]
+                if previous
+                and i["section"] == "events"
+                and i["row"].get("published_at", "") > previous["created_at"]
+            ],
         },
         evidence_strength=level,
         evidence_strength_why=why,

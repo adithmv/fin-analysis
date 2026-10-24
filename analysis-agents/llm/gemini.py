@@ -4,6 +4,33 @@ import httpx
 from .base import Provider, ProviderError, Reply
 
 
+def provider_schema(schema):
+    """Expand Pydantic definitions into Gemini's supported OpenAPI schema subset."""
+    definitions = schema.get("$defs", {})
+
+    def convert(node):
+        if "$ref" in node:
+            return convert(definitions[node["$ref"].split("/")[-1]])
+        if "anyOf" in node:
+            choices = [c for c in node["anyOf"] if c.get("type") != "null"]
+            if len(choices) != 1:
+                raise ValueError("Unsupported schema union")
+            return {**convert(choices[0]), "nullable": True}
+        result = {}
+        for k, v in node.items():
+            if k == "type":
+                result[k] = v.upper()
+            elif k == "properties":
+                result[k] = {name: convert(child) for name, child in v.items()}
+            elif k == "items":
+                result[k] = convert(v)
+            elif k in ("required", "enum", "description", "nullable"):
+                result[k] = v
+        return result
+
+    return convert(schema)
+
+
 class Gemini(Provider):
     def generate(self, system, prompt, schema, model, generation):
         key = os.environ.get("GEMINI_API_KEY", "").strip()
@@ -18,7 +45,7 @@ class Gemini(Provider):
                 "temperature": generation["temperature"],
                 "maxOutputTokens": generation["max_output_tokens"],
                 "responseMimeType": "application/json",
-                "responseJsonSchema": schema,
+                "responseSchema": provider_schema(schema),
             },
         }
         # No grounding, function tools, URL context, code execution, or browser capabilities.
@@ -50,4 +77,5 @@ class Gemini(Provider):
             text,
             usage.get("promptTokenCount", 0),
             usage.get("candidatesTokenCount", 0) + usage.get("thoughtsTokenCount", 0),
+            data.get("candidates", [{}])[0].get("finishReason", "UNKNOWN"),
         )

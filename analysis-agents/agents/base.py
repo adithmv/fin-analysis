@@ -73,6 +73,7 @@ def generate(limited, role, round_number, pack, messages, config, question=None)
         "summariser" if role == "summariser" else "debater" if role in ("bull", "bear") else "analyst"
     ]
     last_error = ""
+    rejection = "invalid schema or research policy"
     for attempt in range(2):
         reply = limited.generate(
             system,
@@ -82,6 +83,9 @@ def generate(limited, role, round_number, pack, messages, config, question=None)
             model,
         )
         try:
+            if reply.finish_reason != "STOP":
+                rejection = "provider response incomplete"
+                raise ValueError(rejection)
             output = Output.model_validate_json(reply.text)
             bad = violations(output.model_dump(), config["agents"]["policy"]["forbid_terms"])
             if bad:
@@ -90,4 +94,4 @@ def generate(limited, role, round_number, pack, messages, config, question=None)
         except (ValueError, json.JSONDecodeError):
             # Do not echo model text (which could contain injected secrets or instructions) into repair messages.
             last_error = "Previous output was rejected. Return valid schema JSON and obey research-only policy. No trading instructions."
-    raise ValueError("Model output withheld after one schema/policy repair attempt")
+    raise ValueError(f"Model output withheld after one schema/policy repair attempt ({rejection})")

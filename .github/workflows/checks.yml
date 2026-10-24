@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: [signals, backtest]
+        module: [signals, backtest, analysis-agents]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

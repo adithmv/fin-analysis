@@ -17,6 +17,7 @@ class Reply:
     text: str
     tokens_in: int = 0
     tokens_out: int = 0
+    finish_reason: str = "STOP"
 
 
 class Provider:

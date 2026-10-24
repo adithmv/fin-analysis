@@ -168,6 +168,7 @@ def test_strength_tiers_and_confidence_cap():
                     "ref": {"type": "signal_stats", "id": len(p["items"])},
                     "row": {
                         "signal_key": key,
+                        "stats_run_id": "same-run",
                         "scope": "POOLED",
                         "direction": "bullish",
                         "horizon_days": 10,
