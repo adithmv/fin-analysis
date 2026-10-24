@@ -1,0 +1,27 @@
+defaults:
+  user_agent: "FinAnalysisResearch/1.0 (personal research; read-only)"
+  min_seconds_between_pages: 4
+  max_pages_per_job: 20
+  max_pages_per_day_per_domain: 100
+  page_timeout_seconds: 30
+  job_timeout_seconds: 300
+  max_steps: 15
+  max_text_chars: 50000
+  max_html_bytes: 2000000
+  max_pdf_bytes: 10000000
+sites:
+  - key: reliance_releases
+    domain: www.ril.com
+    allowed_path_prefixes: [/news-media/press-releases]
+    start_url: https://www.ril.com/news-media/press-releases
+    purpose: Official company announcements when no feed is available
+    mode: recipe
+    recipe: releases
+    listing_selector: "main a[href]"
+    content_selector: main
+    pdf_allowed: false
+    terms_checked_on: "2026-10-24"
+    terms_url: https://www.ril.com/legal-notice
+    enabled: false
+    llm_allowed: false
+    disabled_reason: Robots request rejected; permission for cloud archival also unresolved.
