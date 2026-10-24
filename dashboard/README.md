@@ -1,8 +1,6 @@
 # Dashboard
 
-Read-only Next.js viewer for `watchlist`, `candles`, `agent_events`, `indicator_values`,
-`signals`, `signal_stats`, `backtest_runs`, `backtest_results`, and `backtest_trades`. Writes
-nothing and emits no business events. Subscribes to events/candles via Supabase
+Next.js viewer for market data, research, and the logbook. Phase 4 adds single-owner login and insert-only research requests; the browser never writes messages or reports. Subscribes to events/candles via Supabase
 Realtime and refetches after reconnect; a 15-second poll covers missed messages.
 
 ## Run
@@ -27,6 +25,10 @@ Open http://127.0.0.1:3000. For production locally: `npm run build`, then
 `npm start`. Both servers bind to loopback. Pages:
 
 - `/`: live activity, module status, filters and event details.
+- `/login`: sign in using locally configured owner credentials.
+- `/threads` and `/threads/[id]`: private live discussions, evidence inspection, reports and queued questions.
+- `/usage`: reserved model attempts, tokens and remaining application budget.
+- `/track-record`: mature outcomes, live/replay separation and small-sample cautions.
 - `/logbook`: paginated events; `/logbook/run/[id]` shows a chronological run.
 - `/stocks`: active watchlist, latest close, provenance and weekday-based health.
 - `/stocks/[symbol]`: candles, SMA/EMA/Bollinger overlays, pattern markers and hover descriptions,

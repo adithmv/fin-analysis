@@ -83,6 +83,8 @@ def build(db: AsOfDB, symbol, config):
             unique.add(key)
     for r in chosen:
         add("signals", r, "quality" if r["signal_type"] == "data_flag" else "signals")
+        if r["signal_type"] == "data_flag":
+            notes.append(f"{r['signal_key']}: {r.get('description', 'Stored data-quality flag')}")
     links = db.rows("article_symbols", {"symbol": symbol}, limit=10000)
     article_ids = {r["article_id"] for r in links if float(r["confidence"]) >= 0.7}
     articles = db.rows("articles", since=since(cfg["news_days"]), limit=2000)

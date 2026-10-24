@@ -94,12 +94,12 @@ still completing TCS. These are intentional failures in the real logbook.
 
 ## Boundaries
 
-Single user, NSE daily equities; no orders, paid APIs, or LLMs.
+Single user, NSE daily equities; no orders or paid APIs. Phase 4 adds the selected Gemini free-tier research provider.
 The specified public-key dashboard uses **public read-only** policies, so these
 tables must contain only public market data and sanitized operational events.
-Private portfolio data requires authenticated owner policies in a later change.
+Phase 4 discussions and questions use authenticated single-owner policies; portfolio data remains out of scope.
 NSE and Yahoo worked in verification; OpenChart currently fails exact equity
 lookup. Adjusted and unadjusted series are not silently mixed.
 
 Module READMEs describe contracts, configuration, commands and known limitations.
-Future phases are placeholders. Scheduling remains manual; no jobs table yet.
+Phase 4 setup and commands are in [analysis-agents/README.md](analysis-agents/README.md). Sign in at `/login` for discussions, questions, model usage and report track records. The local worker must run to process dashboard requests. Scheduling remains manual; Phase 5 is not implemented.

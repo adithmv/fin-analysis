@@ -17,11 +17,6 @@ def violations(value, terms):
 def public_question(text, terms):
     if not isinstance(text, str) or not 1 <= len(text.strip()) <= 2000:
         raise ValueError("Question must contain 1–2000 characters")
-    if violations(text, terms) or re.search(r"\b(?:buy|sell|target|sizing)\b", text, re.I):
-        return (
-            None,
-            "I can discuss stored research evidence, but cannot provide trading instructions. Please ask about signals, news, or their measured reliability.",
-        )
     if re.search(
         r"\b(?:my portfolio|my salary|my account|my holdings|i own|i hold|api.key|password|secret)\b|[\w.+-]+@[\w.-]+|\b(?:\d[ -]?){10,}\b",
         text,
@@ -30,6 +25,19 @@ def public_question(text, terms):
         return (
             None,
             "Please remove personal holdings, account details and credentials. Only public market research questions can be sent to the model.",
+        )
+    if violations(text, terms) or re.search(r"\b(?:buy|sell|target|sizing)\b", text, re.I):
+        parts = re.split(r"(?<=[?.!])\s+", text)
+        research = [
+            p
+            for p in parts
+            if not violations(p, terms)
+            and not re.search(r"\b(?:buy|sell|target|sizing)\b", p, re.I)
+            and re.search(r"\b(?:evidence|signals|news|reliability|research|data)\b", p, re.I)
+        ]
+        return (
+            " ".join(research) or None,
+            "I can discuss stored research evidence, but cannot provide trading instructions. Any separate research question will be answered from the evidence.",
         )
     return text.strip(), None
 

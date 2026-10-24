@@ -128,7 +128,7 @@ def run(client, provider, config, symbol, force=False, as_of=None, on_demand=Fal
                     thread_id,
                     messages,
                     role,
-                    output.content_md,
+                    output.content_md + "\n\nCounter-argument: " + output.counter_argument,
                     round=round_number,
                     stance=output.stance,
                     confidence=output.confidence,
@@ -201,7 +201,8 @@ def answer(client, provider, config, request):
     write_message(client, thread["id"], messages, "user", request["question_text"], author_type="user")
     if refusal:
         write_message(client, thread["id"], messages, "system", refusal)
-        return "rejected"
+        if not text:
+            return "rejected"
     run_id = str(uuid4())
     limited = LimitedProvider(client, provider, config["llm"], run_id, thread["id"], question=True)
     tools = ResearchTools(pack, run_id)
@@ -213,7 +214,7 @@ def answer(client, provider, config, request):
         thread["id"],
         messages,
         "research_assistant",
-        output.content_md,
+        output.content_md + "\n\nCounter-argument: " + output.counter_argument,
         claims=[c.model_dump() for c in output.claims],
         stance=output.stance,
         confidence=output.confidence,

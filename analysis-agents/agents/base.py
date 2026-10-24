@@ -28,7 +28,12 @@ def safe_transcript(messages):
 
 
 def generate(limited, role, round_number, pack, messages, config, question=None):
-    system = (PROMPTS / "system.md").read_text() + "\n" + (PROMPTS / f"{role}.md").read_text()
+    snapshot = config.get("prompt_snapshot")
+    system = (
+        (snapshot["system"] + "\n" + snapshot[role])
+        if snapshot
+        else (PROMPTS / "system.md").read_text() + "\n" + (PROMPTS / f"{role}.md").read_text()
+    )
     role_items = pack["items"]
     # Full evidence is frozen in the database; prompts contain a compact, auditable subset.
     counts = {}

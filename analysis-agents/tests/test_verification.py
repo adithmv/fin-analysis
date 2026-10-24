@@ -144,6 +144,10 @@ def test_policy_and_hostile_delimiters():
         assert violations("Please " + term, terms)
     assert not violations("The company announced a buyback.", terms)
     assert public_question("Should I buy this?", terms)[0] is None
+    assert (
+        public_question("Should I buy this? What signals contradict the view?", terms)[0]
+        == "What signals contradict the view?"
+    )
     assert public_question("My portfolio contains personal holdings", terms)[0] is None
     assert public_question("What does the evidence show?", terms)[0]
     with pytest.raises(ValueError):

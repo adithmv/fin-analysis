@@ -1,4 +1,5 @@
 from evidence.refs import resolve_pack
+from data.asof_db import instant
 
 DISCLAIMER = "Research analysis only, not investment advice or a recommendation to buy or sell."
 
@@ -143,14 +144,16 @@ def build_report(output, verification, pack, config, messages):
                 for i in pack["items"]
                 if previous
                 and i["section"] == "signals"
-                and i["row"].get("computed_at", "") > previous["created_at"]
+                and i["row"].get("ts")
+                and instant(i["row"]["ts"]) > instant(previous["created_at"])
             ],
             "new_events": [
                 i["evidence_id"]
                 for i in pack["items"]
                 if previous
                 and i["section"] == "events"
-                and i["row"].get("published_at", "") > previous["created_at"]
+                and i["row"].get("published_at")
+                and instant(i["row"]["published_at"]) > instant(previous["created_at"])
             ],
         },
         evidence_strength=level,
