@@ -209,6 +209,16 @@ def answer(client, provider, config, request):
     tools.get_data_quality(thread["symbol"])
     output, reply, model = generate(limited, "research_assistant", 1, pack, messages, config, text)
     checked = verify(output, pack, config["verification"])
+    log_event(
+        run_id,
+        "analysis-agents",
+        "verify_claims",
+        "failed" if checked["severe"] else "warning" if checked["status"] != "verified" else "success",
+        agent="research_assistant",
+        symbol=thread["symbol"],
+        output_summary=checked["status"],
+        meta={"thread_id": thread["id"], "severe": checked["severe"], "claim_results": checked["claims"]},
+    )
     write_message(
         client,
         thread["id"],

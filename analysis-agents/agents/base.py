@@ -13,14 +13,19 @@ def safe_transcript(messages):
         accepted = {
             r["claim_id"] for r in verification.get("claims", []) if r["status"] in ("verified", "partial")
         }
-        claims = [c for c in m.get("claims", []) if c["id"] in accepted]
+        claims = [
+            {k: v for k, v in c.items() if v is not None} for c in m.get("claims", []) if c["id"] in accepted
+        ]
         output.append(
             {
                 "role": m["author_role"],
                 "round": m.get("round"),
                 "status": m["verification_status"],
                 "claims": claims,
-                "verification": verification,
+                "verification": [
+                    {k: v for k, v in r.items() if k != "evidence_ref"}
+                    for r in verification.get("claims", [])
+                ],
                 "withheld_claims": [c["id"] for c in m.get("claims", []) if c["id"] not in accepted],
             }
         )
@@ -35,15 +40,47 @@ def generate(limited, role, round_number, pack, messages, config, question=None)
         else (PROMPTS / "system.md").read_text() + "\n" + (PROMPTS / f"{role}.md").read_text()
     )
     role_items = pack["items"]
+    stats = sorted(
+        [i for i in role_items if i["section"] == "track_records"],
+        key=lambda i: (
+            i["row"]["scope"] != "POOLED",
+            bool(i["row"].get("abnormal")),
+            i["row"]["sample"] not in ("in_sample", "out_of_sample"),
+            i["row"]["signal_key"],
+            i["row"]["direction"],
+            i["row"]["sample"],
+        ),
+    )
+    news_stats = [i for i in stats if i["row"]["signal_key"].startswith(("news:", "sentiment:"))]
+    technical_stats = [i for i in stats if i not in news_stats]
+    chosen_stats = (
+        news_stats[:8]
+        if role == "news_analyst"
+        else technical_stats[:8]
+        if role == "technical_analyst"
+        else technical_stats[:4] + news_stats[:4]
+    )
+    core_indicators = {
+        "rsi_14",
+        "sma_50",
+        "sma_200",
+        "atr_14",
+        "adx_14",
+        "macd_line_12_26_9",
+        "macd_hist_12_26_9",
+        "bb_upper_20_2",
+        "bb_lower_20_2",
+        "volume_avg_20",
+    }
     # Full evidence is frozen in the database; prompts contain a compact, auditable subset.
     counts = {}
     selected = []
     caps = {
         "prices": 5,
         "market": 3,
-        "indicators": 24,
-        "signals": 18,
-        "track_records": 12,
+        "indicators": 10,
+        "signals": 8,
+        "track_records": 8,
         "news": 5,
         "events": 8,
         "macro": 3,
@@ -53,6 +90,26 @@ def generate(limited, role, round_number, pack, messages, config, question=None)
     }
     for item in role_items:
         section = item["section"]
+        if section == "track_records" and item not in chosen_stats:
+            continue
+        if section == "indicators" and item["row"]["series_key"] not in core_indicators:
+            continue
+        if role == "news_analyst" and section in ("prices", "indicators", "signals", "market"):
+            continue
+        if (
+            role == "news_analyst"
+            and section == "track_records"
+            and not item["row"]["signal_key"].startswith(("news:", "sentiment:"))
+        ):
+            continue
+        if role == "technical_analyst" and section in ("news", "events", "macro"):
+            continue
+        if (
+            role == "technical_analyst"
+            and section == "track_records"
+            and item["row"]["signal_key"].startswith(("news:", "sentiment:"))
+        ):
+            continue
         counts[section] = counts.get(section, 0) + 1
         if section == "prices" and item not in [i for i in role_items if i["section"] == "prices"][-5:]:
             continue

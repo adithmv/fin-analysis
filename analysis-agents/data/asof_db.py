@@ -13,6 +13,7 @@ DATES = {
     "corporate_actions": "announced_at",
     "article_sentiment": "computed_at",
     "analysis_reports": "created_at",
+    "report_outcomes": "graded_at",
     "agent_events": "ts",
 }
 KEYS = {
@@ -21,6 +22,7 @@ KEYS = {
     "signals": ["symbol", "exchange", "timeframe", "ts", "signal_key"],
     "article_symbols": ["article_id", "symbol", "exchange"],
     "article_sentiment": ["article_id", "scope", "model_key", "model_revision"],
+    "report_outcomes": ["report_id", "horizon_days"],
 }
 
 

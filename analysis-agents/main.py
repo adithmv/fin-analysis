@@ -148,12 +148,14 @@ def main(argv=None):
                     journal = cache / "active-analysis-request"
                     journal.write_text(str(request["id"]))
                     try:
+                        error = None
                         if request["kind"] == "question":
                             status = answer(client, model, cfg, request)
                         else:
                             result = run(client, model, cfg, request["symbol"], force=True, on_demand=True)
                             status = "done" if result["status"] == "completed" else "failed"
-                        error = None
+                            if status == "failed":
+                                error = f"Discussion {result['thread_id']} ended with status {result['status']}; inspect its transcript."
                     except Exception as exc:
                         status = "failed"
                         error = str(sanitize(exc))[:500]

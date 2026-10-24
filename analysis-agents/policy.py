@@ -6,9 +6,13 @@ def violations(value, terms):
     text = json.dumps(value, ensure_ascii=True) if not isinstance(value, str) else value
     found = [term for term in terms if re.search(r"\b" + re.escape(term) + r"\b", text, re.I)]
     if re.search(
-        r"\b(?:you should|recommend(?:ed)?|must|should i|i would)\s+(?:buy|sell|purchase|short)\b", text, re.I
+        r"\b(?:you should|recommend(?:ed)?|must|should i|i would|consider)\s+(?:consider\s+)?(?:buy(?:ing)?|sell(?:ing)?|purchas(?:e|ing)|short(?:ing)?)\b",
+        text,
+        re.I,
     ):
         found.append("trade instruction")
+    if re.search(r"\b(?:take|open|enter)\s+(?:a\s+)?(?:long|short)\s+position\b", text, re.I):
+        found.append("position instruction")
     if re.search(r"\b(?:invest|allocate)\s+(?:rs\.?|inr|₹|\d)", text, re.I):
         found.append("allocation instruction")
     return found

@@ -77,5 +77,5 @@ class Gemini(Provider):
             text,
             usage.get("promptTokenCount", 0),
             usage.get("candidatesTokenCount", 0) + usage.get("thoughtsTokenCount", 0),
-            data.get("candidates", [{}])[0].get("finishReason", "UNKNOWN"),
+            (data.get("candidates") or [{}])[0].get("finishReason", "UNKNOWN"),
         )

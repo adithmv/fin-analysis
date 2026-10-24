@@ -65,6 +65,8 @@ class LimitedProvider:
                 reply = self.provider.generate(system, prompt, schema, model, cfg["generation"])
             except ProviderError as exc:
                 failure = exc
+            except Exception as exc:
+                failure = ProviderError(f"Provider response failed: {type(exc).__name__}", status=400)
             event = log_event(
                 self.run,
                 "analysis-agents",

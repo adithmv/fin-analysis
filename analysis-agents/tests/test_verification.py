@@ -69,6 +69,7 @@ def output(**kw):
         ("indicator_values", "computed_at"),
         ("signals", "ts"),
         ("signal_stats", "period_end"),
+        ("report_outcomes", "graded_at"),
         ("articles", "published_at"),
         ("articles", "fetched_at"),
         ("news_events", "published_at"),
@@ -143,6 +144,9 @@ def test_policy_and_hostile_delimiters():
     for term in terms:
         assert violations("Please " + term, terms)
     assert not violations("The company announced a buyback.", terms)
+    assert violations("Consider buying this stock", terms)
+    assert violations("Open a long position", terms)
+    assert not violations("The company plans to purchase equipment", terms)
     assert public_question("Should I buy this?", terms)[0] is None
     assert (
         public_question("Should I buy this? What signals contradict the view?", terms)[0]

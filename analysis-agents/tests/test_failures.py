@@ -82,3 +82,23 @@ def test_future_replay_rejected_before_any_write():
     with pytest.raises(ValueError, match="future"):
         orchestrator.run(db, Fake(), CONFIG, "TCS", as_of="2099-01-01T00:00:00Z")
     assert not db.tables
+
+
+def test_worker_restart_marks_only_its_interrupted_work(monkeypatch, tmp_path):
+    import main
+
+    monkeypatch.setattr(main, "ROOT", tmp_path)
+    monkeypatch.setattr(main, "log_event", lambda *a, **k: 1)
+    cache = tmp_path / ".cache"
+    cache.mkdir()
+    (cache / "active-analysis-request").write_text("12")
+    db = Memory()
+    db.tables["analysis_requests"] = [{"id": 12, "status": "running"}, {"id": 13, "status": "pending"}]
+    db.tables["threads"] = [
+        {"id": "ours", "run_id": "r", "status": "running", "config": {"worker_id": "local"}},
+        {"id": "other", "run_id": "s", "status": "running", "config": {"worker_id": "other"}},
+    ]
+    main.recover(db, "local")
+    assert [r["status"] for r in db.tables["threads"]] == ["failed", "running"]
+    assert [r["status"] for r in db.tables["analysis_requests"]] == ["failed", "pending"]
+    assert not (cache / "active-analysis-request").exists()

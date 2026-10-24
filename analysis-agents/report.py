@@ -139,6 +139,15 @@ def build_report(output, verification, pack, config, messages):
             "previous_stance": previous["stance"] if previous else None,
             "current_stance": stance,
             "latest_session": pack["latest_session"],
+            "previous_trend": previous.get("what_changed", {}).get("current_trend") if previous else None,
+            "current_trend": next(
+                (
+                    i["row"].get("details", {}).get("trend_state")
+                    for i in pack["items"]
+                    if i["section"] == "signals" and i["row"].get("signal_key") == "trend_state"
+                ),
+                None,
+            ),
             "new_signals": [
                 i["evidence_id"]
                 for i in pack["items"]

@@ -135,6 +135,9 @@ def build(db: AsOfDB, symbol, config):
         add("news_events", r, "macro")
     previous = db.rows("analysis_reports", {"symbol": symbol}, limit=1)
     if previous:
+        previous[0]["outcomes_available_at_cutoff"] = db.rows(
+            "report_outcomes", {"report_id": previous[0]["id"]}, limit=5
+        )
         add("analysis_reports", previous[0], "previous_report")
     # Public data allowlist: no questions, users, credentials, request metadata or log messages enter prompts.
     pack = {
@@ -145,6 +148,19 @@ def build(db: AsOfDB, symbol, config):
         "latest_session": latest["ts"],
         "schema_version": "v1",
         "public_market_data_only": True,
+        "price_summary": {
+            "last_close": latest["close"],
+            "changes_before_costs": {
+                str(days): {
+                    "fraction": float(latest["close"]) / float(candles[-days - 1]["close"]) - 1,
+                    "from_ref": reference("candles", candles[-days - 1]),
+                    "to_ref": reference("candles", latest),
+                }
+                for days in (1, 5, 20)
+                if len(candles) > days and float(candles[-days - 1]["close"]) > 0
+            },
+            "note": "Code-derived context; numeric claims must cite underlying stored candle fields.",
+        },
     }
     encoded = json.dumps(pack, sort_keys=True, ensure_ascii=True, allow_nan=False)
     if len(encoded) > cfg["max_pack_characters"]:

@@ -44,6 +44,10 @@ class Query:
     def order(self, *a, **k):
         return self
 
+    def contains(self, key, value):
+        self.filters.append((key, value))
+        return self
+
     def insert(self, value):
         self.operation = "insert"
         self.payload = value
