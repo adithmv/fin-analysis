@@ -11,6 +11,8 @@ const modules = [
   "news",
   "analysis-agents",
   "browser-agent",
+  "scheduler",
+  "alerts",
 ];
 const labels: Record<string, string> = {
   ingest: "Price ingestion",
@@ -19,6 +21,8 @@ const labels: Record<string, string> = {
   news: "News & sentiment",
   "analysis-agents": "Research agents",
   "browser-agent": "Web research",
+  scheduler: "Pipeline scheduler",
+  alerts: "Health & alerts",
 };
 const statuses = [
   "started",

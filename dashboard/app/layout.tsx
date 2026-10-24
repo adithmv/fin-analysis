@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginLink } from "@/components/auth";
+import { CriticalAlerts } from "@/components/operations";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -27,6 +28,15 @@ export default function RootLayout({
           </Link>
           <div className="nav-label">WORKSPACE</div>
           <nav>
+            <Link href="/ops">
+              ⚙ <span>Operations</span>
+            </Link>
+            <Link href="/alerts">
+              ! <span>Alerts</span>
+            </Link>
+            <Link href="/corporate-actions">
+              ⇄ <span>Adjustment review</span>
+            </Link>
             <Link href="/threads">
               ◈ <span>Discussions</span>
             </Link>
@@ -68,7 +78,7 @@ export default function RootLayout({
               <br />
               Every action, accounted for.
             </p>
-            <span className="phase">PHASE 04 / EVIDENCE & DISCUSSION</span>
+            <span className="phase">PHASE 05 / OPERATIONS</span>
           </div>
         </aside>
         <main className="workspace">
@@ -78,6 +88,7 @@ export default function RootLayout({
             </span>
             <LoginLink />
           </header>
+          <CriticalAlerts />
           {children}
           <footer>
             Analysis for research, not an investment recommendation.{" "}

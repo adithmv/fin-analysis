@@ -28,10 +28,12 @@ export function ResearchChart({
   candles,
   symbol,
   events,
+  priceBasis = "raw",
 }: {
   candles: Candle[];
   symbol: string;
   events: ChartEvent[];
+  priceBasis?: "raw" | "adjusted";
 }) {
   const [range, setRange] = useState("252");
   const [focusDate, setFocusDate] = useState("");
@@ -90,8 +92,18 @@ export function ResearchChart({
     ])
       .then(([i, s]) => {
         if (active) {
-          setIndicators(i);
-          setSignals(s);
+          const markers = s.filter((row) => row.signal_key === "trend_state");
+          const matching =
+            markers.length > 0 &&
+            markers.every(
+              (row) => (row.details.price_basis || "raw") === priceBasis,
+            );
+          setIndicators(matching ? i : []);
+          setSignals(matching ? s : []);
+          if (!matching)
+            setError(
+              "Indicators hidden: stored signals use a different price basis or need recomputation.",
+            );
         }
       })
       .catch((e) => {
@@ -103,7 +115,7 @@ export function ResearchChart({
     return () => {
       active = false;
     };
-  }, [symbol, first, last]);
+  }, [symbol, first, last, priceBasis]);
   useEffect(() => {
     if (
       !priceRef.current ||

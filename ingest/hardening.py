@@ -115,12 +115,13 @@ def refresh(client, years):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["calendar", "propose"])
+    parser.add_argument("command", choices=["calendar", "propose", "compare"])
     parser.add_argument("--years", default=str(date.today().year))
     args = parser.parse_args(argv)
     client, run_id = get_client(), str(uuid4())
     try:
-        result = refresh(client, [int(y) for y in args.years.split(",")]) if args.command == "calendar" else propose(client)
+        result = (refresh(client, [int(y) for y in args.years.split(",")]) if args.command == "calendar"
+                  else compare(client) if args.command == "compare" else propose(client))
         print(json.dumps(result))
         log_event(run_id, "ingest", args.command, "success", meta=result)
         return 0
@@ -128,6 +129,40 @@ def main(argv=None):
         log_event(run_id, "ingest", args.command, "failed", error=type(exc).__name__)
         print(f"Hardening failed: {type(exc).__name__}; inspect source coverage and database connectivity")
         return 1
+
+
+def compare(client):
+    if __package__:
+        from .sources.yfinance_source import YFinanceSource
+    else:
+        from sources.yfinance_source import YFinanceSource
+    import time
+
+    results=[]
+    proposals=client.table("adjustment_factors").select("*").eq("status","proposed").execute().data
+    for proposal in proposals:
+        ex=date.fromisoformat(proposal["ex_date"])
+        start,end=ex-timedelta(days=10),ex+timedelta(days=10)
+        raw=client.table("candles").select("ts,close,adjusted").eq("symbol",proposal["symbol"]).eq("exchange","NSE").eq("timeframe","1d").gte("ts",str(start)).lte("ts",str(end)).execute().data
+        yahoo=YFinanceSource().fetch_daily(proposal["symbol"],start,end)
+        lookup={str(r.ts.date()):float(r.close) for r in yahoo.itertuples()}
+        errors=[]
+        sides=set()
+        for row in raw:
+            day=datetime.fromisoformat(row["ts"]).astimezone(ZoneInfo("Asia/Kolkata")).date()
+            if str(day) not in lookup:
+                continue
+            expected=float(row["close"])*(float(proposal["factor"]) if day<ex and not row["adjusted"] else 1)
+            errors.append(abs(expected/lookup[str(day)]-1))
+            sides.add(day<ex)
+        good=len(errors)>=6 and len(sides)==2 and max(errors)<=0.005
+        detail={"symbol":proposal["symbol"],"ex_date":str(ex),"matched_sessions":len(errors),
+                "max_relative_error":max(errors) if errors else None,"independent_source":"Yahoo Finance split-adjusted OHLC", "passed":good}
+        client.table("health_checks").insert({"check_key":"adjustment_crosscheck","subject":proposal["symbol"]+":"+str(ex),
+            "status":"ok" if good else "warn","value":detail["max_relative_error"],"detail":detail}).execute()
+        results.append(detail)
+        time.sleep(2)
+    return results
 
 
 if __name__ == "__main__":

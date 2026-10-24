@@ -19,18 +19,30 @@ Updated 2026-10-24. Phase 5 is in progress, not accepted as complete.
 - Calendar loaded for 2023-2026 (1,461 rows). Library holidays plus official
   special-session overrides now have zero conflicts with stored candle dates.
 - Two real bonus factors proposed, not approved: RELIANCE 2024-10-28 and
-  HDFCBANK 2025-08-26, both 0.5. Independent source comparison and human review
-  must precede changing the default price basis. Signals/backtests remain raw.
+  HDFCBANK 2025-08-26, both 0.5. Independent Yahoo comparison passed for 14
+  sessions each (maximum relative errors 3.75e-8 and 2.57e-8 respectively).
+  Human approval remains pending. Signals/backtests remain raw.
+- Migration 010: atomic incident recording, notification cooldown and owner-only
+  operations. Repeated failing check after acknowledgement preserved one incident;
+  a passing check resolved it. Transactional fixture rolled back.
+- Telegram adapter uses plain text, no paid broadcasts, sanitized failure messages.
+  Four offline notifier tests passed. Live health run completed 34 checks without
+  failed groups; 11 current incidents are visible in the dashboard. No messages sent.
+- `/ops`, `/alerts`, `/documents`, `/corporate-actions` added. Playwright passed
+  anonymous denial, owner session validation, invalid input, cross-origin denial,
+  chart previews and mobile layout. No real approvals made by tests.
 
 ## Pending
 
-Alerts/channel setup, browser guard and source review, operations dashboard,
-adjustment review/comparison and rerun of studies, backups and actual restore,
+Telegram credentials/delivery test, remaining health rules, browser guard and source review,
+remaining operations views, human adjustment approval and rerun of studies, backups and actual restore,
 retention dry-run review, security/dependency/history scans, expanded CI,
 startup integration and five real trading days unattended.
 
-Questions sent: preferred alert channel and second backup destination. Laptop is
-the assumed scheduler host. Docker is installed but its engine is not running;
+Owner chose Telegram and Google cloud storage for the second copy. Google Drive
+was suggested (not yet connected); Google Docs cannot hold a restorable dump.
+Local bot credentials and PostgreSQL DATABASE_URL requested, fields prepared in
+ignored `.env`. Laptop is the scheduler host. Docker is installed but its engine is not running;
 the restore drill needs a local scratch Postgres instance. No external messages
 have been sent. Existing Phase 3 human-labelled news review remains deferred.
 

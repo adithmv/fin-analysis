@@ -32,11 +32,13 @@ export function StockPage({ symbol }: { symbol: string }) {
     };
   }, [symbol]);
   const [candles, setCandles] = useState<Candle[]>([]);
+  const [priceBasis, setPriceBasis] = useState<"raw" | "adjusted">("raw");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     let active = true,
       sequence = 0;
+    setLoading(true);
     const client = getBrowserClient();
     if (!client) {
       setError("Configure dashboard/.env.local to connect Supabase.");
@@ -48,7 +50,7 @@ export function StockPage({ symbol }: { symbol: string }) {
       const all: Candle[] = [];
       for (let offset = 0; ; offset += 500) {
         const { data, error } = await client!
-          .from("candles")
+          .from(priceBasis === "adjusted" ? "candles_adjusted" : "candles")
           .select("*")
           .eq("symbol", symbol)
           .eq("exchange", "NSE")
@@ -93,7 +95,7 @@ export function StockPage({ symbol }: { symbol: string }) {
       clearInterval(timer);
       void client.removeChannel(channel);
     };
-  }, [symbol]);
+  }, [symbol, priceBasis]);
   const last = candles.at(-1);
   const chartEvents: ChartEvent[] = [
     ...actions
@@ -148,6 +150,20 @@ export function StockPage({ symbol }: { symbol: string }) {
           <span className="small-link">INR</span>
         </div>
         <div className="chart-wrap">
+          <label className="search-label">
+            Price history
+            <select
+              value={priceBasis}
+              onChange={(e) =>
+                setPriceBasis(e.target.value as "raw" | "adjusted")
+              }
+            >
+              <option value="raw">Stored source prices</option>
+              <option value="adjusted">
+                Approved split / bonus adjustments
+              </option>
+            </select>
+          </label>
           {loading ? (
             <div className="skeleton">Loading stored candles…</div>
           ) : !last ? (
@@ -175,11 +191,14 @@ export function StockPage({ symbol }: { symbol: string }) {
                 candles={candles}
                 symbol={symbol}
                 events={chartEvents}
+                priceBasis={priceBasis}
               />
               <p className="attribution">
-                {last.adjusted
-                  ? "Split-adjusted source data."
-                  : "Unadjusted source data; corporate actions can cause price jumps."}{" "}
+                {priceBasis === "adjusted"
+                  ? "Approved split/bonus adjustments; cash dividends excluded."
+                  : last.adjusted
+                    ? "Split-adjusted source data."
+                    : "Unadjusted source data; corporate actions can cause price jumps."}{" "}
                 Stored session dates shown in IST.
               </p>
             </>
