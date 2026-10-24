@@ -27,6 +27,16 @@ def provider(config):
 
 
 def recover(client, node):
+    journal = ROOT / ".cache" / "active-analysis-request"
+    if journal.exists():
+        client.table("analysis_requests").update(
+            {
+                "status": "failed",
+                "finished_at": datetime.now(timezone.utc).isoformat(),
+                "error": "Local worker interrupted; partial messages retained. Submit a new request to retry.",
+            }
+        ).eq("id", int(journal.read_text())).eq("status", "running").execute()
+        journal.unlink()
     for r in (
         client.table("threads")
         .select("id,run_id")
@@ -135,6 +145,8 @@ def main(argv=None):
             while True:
                 requests = client.rpc("claim_analysis_request").execute().data
                 for request in requests:
+                    journal = cache / "active-analysis-request"
+                    journal.write_text(str(request["id"]))
                     try:
                         if request["kind"] == "question":
                             status = answer(client, model, cfg, request)
@@ -152,6 +164,7 @@ def main(argv=None):
                             "error": error,
                         }
                     ).eq("id", request["id"]).execute()
+                    journal.unlink(missing_ok=True)
                 if args.once:
                     return 0
                 clock.sleep(5)

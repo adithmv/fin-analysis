@@ -75,6 +75,8 @@ def verify(output, pack, config):
                     if numbers(c["text"]):
                         raise ValueError("Put historical numerical assertions in separate numeric claims")
                 elif c["kind"] == "event":
+                    if numbers(c["text"]):
+                        raise ValueError("Put event numerical assertions in separate numeric claims")
                     if ref["type"] not in ("news_event", "corporate_action"):
                         raise ValueError("Event reference required")
                     kind = r.get("event_type", r.get("action_type"))

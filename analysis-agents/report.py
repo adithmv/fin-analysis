@@ -94,6 +94,8 @@ def build_report(output, verification, pack, config, messages):
     confidence = "low" if level in ("none", "weak") or verification["severe"] else output.confidence
 
     def points(values):
+        if verification["notes"] or verification["severe"]:
+            return []
         return [
             {
                 "text": p.text,

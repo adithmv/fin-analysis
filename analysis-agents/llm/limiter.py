@@ -57,7 +57,7 @@ class LimitedProvider:
     def generate(self, system, prompt, schema, role, model):
         cfg = self.config
         for attempt in range(cfg["retries"]["max_attempts"]):
-            reservation = self.reserve(role, model, math.ceil((len(prompt) + len(system)) / 3))
+            reservation = self.reserve(role, model, math.ceil((len(prompt) + len(system)) / 2))
             start = time.monotonic()
             reply = None
             failure = None

@@ -37,5 +37,7 @@ def public_question(text, terms):
 def delimit(value):
     # Quotes are JSON-escaped, and markup cannot close an untrusted-data wrapper.
     return (
-        json.dumps(value, ensure_ascii=True, allow_nan=False).replace("<", "\\u003c").replace(">", "\\u003e")
+        json.dumps(value, ensure_ascii=True, allow_nan=False, separators=(",", ":"))
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
     )

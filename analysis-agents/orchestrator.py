@@ -11,6 +11,7 @@ from report import build_report
 from llm.limiter import LimitedProvider
 from llm.base import BudgetExhausted
 from policy import public_question
+from tools import ResearchTools
 
 
 def now():
@@ -203,6 +204,8 @@ def answer(client, provider, config, request):
         return "rejected"
     run_id = str(uuid4())
     limited = LimitedProvider(client, provider, config["llm"], run_id, thread["id"], question=True)
+    tools = ResearchTools(pack, run_id)
+    tools.get_data_quality(thread["symbol"])
     output, reply, model = generate(limited, "research_assistant", 1, pack, messages, config, text)
     checked = verify(output, pack, config["verification"])
     write_message(
@@ -225,7 +228,7 @@ def answer(client, provider, config, request):
         verification_status=checked["status"],
         verification_notes=[*checked["claims"], *checked["notes"]],
         llm_model=model,
-        event_ids=limited.event_ids,
+        event_ids=[*tools.event_ids, *limited.event_ids],
         tokens_in=reply.tokens_in,
         tokens_out=reply.tokens_out,
     )
