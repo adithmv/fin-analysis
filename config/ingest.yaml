@@ -1,4 +1,5 @@
 source_priority: [jugaad, openchart, yfinance]
+disabled_sources: [jugaad, openchart] # NSE automated-collection terms; see docs/SOURCES_TERMS.md.
 index_source_priority: [yfinance]
 default_lookback_days: 1095
 delay_between_symbols_seconds: 1.5

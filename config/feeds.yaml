@@ -8,5 +8,5 @@ sources:
   - {key: business_standard_markets, name: Business Standard, type: rss, url: "https://www.business-standard.com/rss/markets-106.rss", tier: 1, enabled: true}
   - {key: thehindu_markets, name: The Hindu, type: rss, url: "https://www.thehindu.com/business/markets/feeder/default.rss", tier: 2, enabled: true}
   - {key: economic_times_markets, name: Economic Times, type: rss, url: "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms", tier: 1, enabled: true}
-  - {key: nse_announcements, name: NSE announcements, type: exchange_api, url: "https://www.nseindia.com/companies-listing/corporate-filings-announcements", tier: 0, enabled: true}
+  - {key: nse_announcements, name: NSE announcements, type: exchange_api, url: "https://www.nseindia.com/companies-listing/corporate-filings-announcements", tier: 0, enabled: false, notes: "Disabled 2026-10-24: NSE terms prohibit automated collection; permission or a licensed alternative required."}
   - {key: bse_announcements, name: BSE announcements, type: exchange_api, url: "https://www.bseindia.com/corporates/ann.html", tier: 0, enabled: true}

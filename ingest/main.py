@@ -63,6 +63,8 @@ class Pipeline:
         self.logger(self.run_id, "ingest", action, status, **fields)
 
     def fetch(self, name, symbol, start, end):
+        if name in self.config.get("disabled_sources", []):
+            raise SourceError("Source disabled by terms review; see docs/SOURCES_TERMS.md", blocked=True)
         if name in self.blocked:
             self.event(
                 "fetch_candles",

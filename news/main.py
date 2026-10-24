@@ -38,6 +38,8 @@ def sources(client, feeds):
         )
         if entry["key"] not in existing:
             upsert(client, "news_sources", [row], "source_key", True)
+        elif not entry["enabled"] and existing[entry["key"]]["enabled"]:
+            execute(client.table("news_sources").update({"enabled":False,"notes":entry.get("notes")}).eq("source_key",entry["key"]))
     return {r["source_key"]: r for r in read(client, "news_sources")}
 
 
