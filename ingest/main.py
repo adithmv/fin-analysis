@@ -19,32 +19,43 @@ if __package__:
     from .sources.base import SourceError
     from .sources.runner import create_source, fetch_bounded
     from .validate import validate
+    from .hardening import read_calendar
 else:
     from sources.base import SourceError
     from sources.runner import create_source, fetch_bounded
     from validate import validate
+    from hardening import read_calendar
 
 ROOT = Path(__file__).resolve().parents[1]
 IST = ZoneInfo("Asia/Kolkata")
 
 
-def completed_date(now=None):
+def completed_date(now=None, calendar=None):
     # Conservative: today's candle is only eligible after 18:00 IST.
     now = now or datetime.now(IST)
     now = now.astimezone(IST)
     day = now.date() if now.hour >= 18 else now.date() - timedelta(days=1)
+    if calendar is not None:
+        for _ in range(15):
+            if day not in calendar:
+                raise ValueError("Exchange calendar missing; refresh before ingestion")
+            if calendar[day]["is_trading_day"]:
+                return day
+            day -= timedelta(days=1)
+        raise ValueError("No recent exchange session in calendar")
     while day.weekday() >= 5:
         day -= timedelta(days=1)
     return day
 
 
 class Pipeline:
-    def __init__(self, client, config, *, fetcher=fetch_bounded, logger=log_event, sleep=time.sleep):
+    def __init__(self, client, config, *, fetcher=fetch_bounded, logger=log_event, sleep=time.sleep, calendar=None):
         self.client, self.config = client, config
         self.fetcher, self.logger, self.sleep = fetcher, logger, sleep
         self.run_id = str(uuid4())
         self.blocked = set()
         self.warnings = 0
+        self.calendar = calendar
 
     def event(self, action, status, **fields):
         if status == "warning":
@@ -74,7 +85,7 @@ class Pipeline:
             )
             try:
                 raw = self.fetcher(name, symbol, start, end, self.config["source_timeout_seconds"])
-                result = validate(raw, start, end)
+                result = validate(raw, start, end, self.calendar)
                 self.event(
                     "fetch_candles",
                     "success",
@@ -339,7 +350,9 @@ def main(argv=None):
         client = get_client()
         # Fail clearly before source requests if the DB credentials are invalid.
         client.table("watchlist").select("symbol").limit(1).execute()
-        pipeline = Pipeline(client, config)
+        calendar = read_calendar(client, args.since or date.today()-timedelta(days=1500), date.today())
+        end = completed_date(calendar=calendar)
+        pipeline = Pipeline(client, config, calendar=calendar)
         pipeline.sync_watchlist(yaml.safe_load((ROOT / "config/watchlist.yaml").read_text()))
         symbols = (
             [
@@ -358,7 +371,7 @@ def main(argv=None):
             raise ValueError("Provide valid NSE symbols")
         totals = pipeline.run(
             symbols,
-            completed_date(),
+            end,
             since=args.since,
             days=args.days,
             sources=[args.source] if args.source else None,

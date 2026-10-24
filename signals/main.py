@@ -94,7 +94,8 @@ def compute(frame, config):
         signatures.append(digest.hexdigest())
     for row in rows:
         if row["signal_key"] == "trend_state":
-            row["details"].update(config_hash=config_hash(config), input_hash=signatures[row["index"]])
+            row["details"].update(config_hash=config_hash(config), input_hash=signatures[row["index"]],
+                                  price_basis=config.get("price_basis", "raw"))
     return values, rows
 
 
@@ -127,11 +128,24 @@ def target_days(
     return targets
 
 
+def read_calendar(client):
+    calendar = []
+    for offset in range(0, 10000, 500):
+        page = client.table("trading_calendar").select("day,is_trading_day").eq("exchange", "NSE").order("day").range(offset, offset+499).execute().data
+        calendar.extend(page)
+        if len(page) < 500:
+            return {date.fromisoformat(r["day"]): r["is_trading_day"] for r in calendar}
+    raise ValueError("Calendar range too large")
+
+
 def run_symbol(client, symbol, config, run_id, recompute=False, since=None):
     def event(action, status, **fields):
         log_event(run_id, "signals", action, status, symbol=symbol, **fields)
 
-    frame = prepare(read_rows(client, "candles", symbol))
+    basis = config.get("price_basis", "raw")
+    if basis not in ("raw", "adjusted"):
+        raise ValueError("Invalid price_basis")
+    frame = prepare(read_rows(client, "candles_adjusted" if basis == "adjusted" else "candles", symbol))
     if frame.empty:
         event("load_candles", "skipped", output_summary="No stored candles")
         return {"status": "skipped", "days": 0}
@@ -142,6 +156,7 @@ def run_symbol(client, symbol, config, run_id, recompute=False, since=None):
             "skipped",
             output_summary="Short history: long-period indicators remain null; short-history flags retained",
         )
+    frame.attrs["calendar"] = read_calendar(client)
     values, rows = compute(frame, config)
     for action in ("compute_indicators", "compute_patterns", "compute_rules"):
         event(action, "success", output_summary=f"{len(values)} series; {len(rows)} dated signals")

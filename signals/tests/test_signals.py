@@ -132,6 +132,7 @@ def test_short_history_and_version_replacement(monkeypatch):
     tables = {"candles": candles(25).to_dict("records"), "indicator_values": [], "signals": []}
     events = []
     monkeypatch.setattr("signals.main.read_rows", lambda client, table, *args: tables[table])
+    monkeypatch.setattr("signals.main.read_calendar", lambda client: {})
     monkeypatch.setattr("signals.main.log_event", lambda *args, **kwargs: events.append((args, kwargs)))
 
     class Client:

@@ -66,3 +66,23 @@ Database prices are numeric; serialization uses decimal strings from source data
 and warnings (it does not blindly claim success). Exit 1 for any failed symbol or
 configuration/database failure; exit 0 for successful/skipped symbols with
 nonfatal warnings. Logging failures warn on stderr; they never crash collection.
+# Phase 5 calendar and adjustments
+
+`python ingest/hardening.py calendar --years 2023,2024,2025,2026` refreshes the
+calendar using the pinned holiday library and sourced overrides in
+`config/calendar.yaml`. Unknown years fail closed instead of assuming every
+weekday is open. Stored candle dates are cross-checked and conflicts recorded as
+health checks. Refresh annually and when exchange circulars change. The 2026
+baseline is [NSE CMTR71775](https://nsearchives.nseindia.com/content/circulars/CMTR71775.pdf),
+amended for [January 15](https://nsearchives.nseindia.com/content/circulars/CMTR72260.pdf).
+Special sessions have individual official circular links in the configuration.
+
+`python ingest/hardening.py propose` inserts unreviewed split/bonus factors;
+re-running never replaces a human decision. Ambiguous/conflicting ratios remain
+in the corporate-action review queue. A 1:1 bonus gives 0.5; face value 10 to 2
+gives 0.2. Products apply only before the ex-date and only once that ex-date is
+inside stored history. Volume changes inversely. Yahoo's already-adjusted OHLC
+passes through unchanged. Cash dividends are not adjusted: this is not a total
+return series. Approval must precede the default adjusted-basis switch and the
+comparison of recomputed studies. Calendar corrections require signal recomputation.
+

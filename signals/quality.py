@@ -39,17 +39,21 @@ def compute(frame, config):
                 )
             previous = frame.iloc[i - 1].ts.tz_convert("Asia/Kolkata").date()
             current = row.ts.tz_convert("Asia/Kolkata").date()
-            missing = len(
-                pd.bdate_range(
+            between = list(pd.date_range(
                     pd.Timestamp(previous) + pd.Timedelta(days=1),
                     pd.Timestamp(current) - pd.Timedelta(days=1),
-                )
-            )
+                ).date)
+            calendar = frame.attrs.get("calendar")
+            unknown = [d for d in between if d.weekday() < 5 and calendar is not None and d not in calendar]
+            if unknown:
+                add(i, "calendar_unknown", "Exchange calendar incomplete; missing sessions cannot be classified",
+                    {"dates": [str(d) for d in unknown]})
+            missing = sum(calendar.get(d, False) if calendar is not None else d.weekday() < 5 for d in between)
             if missing > q["max_missing_weekdays_in_row"]:
                 add(
                     i,
                     "gap_in_data",
-                    f"{missing} missing weekdays before this candle",
+                    f"{missing} missing expected sessions before this candle",
                     {"missing_weekdays": missing},
                 )
         streak = streak + 1 if pd.notna(row.volume) and row.volume == 0 else 0

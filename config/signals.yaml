@@ -1,6 +1,7 @@
 timeframe: 1d
 warmup_candles: 400
-logic_version: "2.0.0"
+logic_version: "2.1.0"
+price_basis: raw # Switch to adjusted only after human review of proposals; bump logic_version again.
 indicators:
   sma: [20, 50, 200]
   ema: [12, 26]

@@ -28,7 +28,7 @@ def session_timestamp(value):
     return ts.normalize().tz_convert("UTC")
 
 
-def validate(frame, start: date, end: date):
+def validate(frame, start: date, end: date, calendar=None):
     required = {"ts", "open", "high", "low", "close", "volume"}
     if frame is None or frame.empty:
         raise SourceError("Source returned no candles")
@@ -72,9 +72,15 @@ def validate(frame, start: date, end: date):
         warnings.append("Volume missing for at least 20% of candles")
     result = result.sort_values("ts").reset_index(drop=True)
     expected = set(pd.bdate_range(start, end).date)
+    if calendar is not None:
+        unknown = expected - set(calendar)
+        expected = {day for day, row in calendar.items() if start <= day <= end and row["is_trading_day"]}
+        if unknown:
+            warnings.append(f"Calendar unknown for {len(unknown)} weekdays; refresh exchange calendar")
     actual = set(result.ts.dt.tz_convert("Asia/Kolkata").dt.date)
     if missing := len(expected - actual):
-        warnings.append(f"{missing} weekdays without candles; may include market holidays")
+        warnings.append(f"{missing} expected trading sessions without candles" if calendar is not None
+                        else f"{missing} weekdays without candles; may include market holidays")
     if (result.close.pct_change().abs() > 0.20).any():
         warnings.append("Price jump above 20%; possible split/bonus, data may be unadjusted")
     return ValidationResult(result, warnings)

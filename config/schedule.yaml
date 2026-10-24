@@ -3,7 +3,7 @@ timezone: Asia/Kolkata
 pipelines:
   daily_close:
     enabled: false
-    cron: "0 17 * * *"
+    cron: "30 18 * * *"
     catchup_minutes: 2160
     trading_days_only: true
     stages:

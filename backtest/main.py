@@ -58,8 +58,10 @@ def read_rows(client, table, symbol):
     raise ValueError("History exceeds supported size")
 
 
-def load_symbol(client, symbol, require_signals=True):
-    frame = pd.DataFrame(read_rows(client, "candles", symbol))
+def load_symbol(client, symbol, require_signals=True, price_basis="raw"):
+    if price_basis not in ("raw", "adjusted"):
+        raise ValueError("Invalid price_basis")
+    frame = pd.DataFrame(read_rows(client, "candles_adjusted" if price_basis == "adjusted" else "candles", symbol))
     if len(frame) < 2:
         raise ValueError(f"{symbol}: need at least two candles")
     frame["ts"] = pd.to_datetime(frame.ts, utc=True)
@@ -93,6 +95,8 @@ def load_symbol(client, symbol, require_signals=True):
             ).encode()
         )
         marker = markers.get(candle.ts)
+        if marker and marker["details"].get("price_basis", "raw") != price_basis:
+            raise ValueError(f"{symbol}: signal price basis differs; recompute signals for {price_basis}")
         if marker is None or marker["details"].get("input_hash") != digest.hexdigest():
             raise ValueError(f"{symbol}: missing or stale signals; run signals first")
     versions = sorted({r["logic_version"] for r in signals})
@@ -166,7 +170,7 @@ def execute(args):
             raise ValueError("No symbols selected")
         data = {}
         for symbol in symbols:
-            data[symbol] = load_symbol(client, symbol)
+            data[symbol] = load_symbol(client, symbol, price_basis=config.get("price_basis", "raw"))
             frame, signals, *_ = data[symbol]
             log_event(
                 run_id,
@@ -195,7 +199,7 @@ def execute(args):
 
                 news_config = yaml.safe_load((ROOT / "config/news.yaml").read_text())
                 occurrences, news_hash = news_events.load(client, news_config, args.source, args.event_type)
-                benchmark = load_symbol(client, news_config["benchmark"], require_signals=False)
+                benchmark = load_symbol(client, news_config["benchmark"], require_signals=False, price_basis=config.get("price_basis", "raw"))
                 metadata.update(
                     event_source=args.source,
                     news_config=news_config,

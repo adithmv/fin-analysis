@@ -34,7 +34,7 @@ termination is not supported; this deployment runs on one laptop.
 Phase 5 rollout: schedules remain disabled until calendar, alerts, environments and
 failure drills pass. The existing Phase 4 request worker must be replaced by queued
 `requests` jobs before enabling scheduled agent work, since both share its local lock.
-17:00 IST is provisional; record real source arrival times during the five-day test.
+18:30 IST follows ingestion's 18:00 cutoff; record real source arrival times during the five-day test.
 
 Validation: `python -m pytest scheduler/tests`; transactional database contract in
 `db/tests/job_queue.sql` (rolls back). Live concurrency tests use isolated fixture jobs.

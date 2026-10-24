@@ -1,0 +1,42 @@
+# Source reviewed 2026-10-24. Holiday library covers 2023-2026; never extrapolate a new year.
+overrides:
+  "2023-11-12":
+    is_trading_day: true
+    note: Muhurat session 18:15-19:15 IST
+    source: https://nsearchives.nseindia.com/content/circulars/CMTR59124.pdf
+  "2024-01-20":
+    is_trading_day: true
+    note: Special Saturday session; normal trading and clearing timings
+    source: https://nsearchives.nseindia.com/content/circulars/CMPT60343.pdf
+  "2024-03-02":
+    is_trading_day: true
+    note: Special live session with disaster-recovery switchover
+    source: https://nsearchives.nseindia.com/content/circulars/MSD60677.pdf
+  "2024-05-18":
+    is_trading_day: true
+    note: Special live session with disaster-recovery switchover
+    source: https://nsearchives.nseindia.com/content/circulars/MSD61893.pdf
+  "2024-11-01":
+    is_trading_day: true
+    note: Muhurat session 18:00-19:00 IST
+    source: https://nsearchives.nseindia.com/content/circulars/CMTR64628.pdf
+  "2025-02-01":
+    is_trading_day: true
+    note: Union Budget Saturday session
+    source: https://nsearchives.nseindia.com/content/circulars/CMTR65729.pdf
+  "2025-10-21":
+    is_trading_day: true
+    note: Muhurat session 13:45-14:45 IST
+    source: https://nsearchives.nseindia.com/content/circulars/CMTR70319.pdf
+  "2026-01-15":
+    is_trading_day: false
+    note: Municipal Corporation Election in Maharashtra
+    source: https://nsearchives.nseindia.com/content/circulars/CMTR72260.pdf
+  "2026-11-08":
+    is_trading_day: true
+    note: Muhurat session; continuous trading begins 14:20, post-close ends 16:00 IST
+    source: https://nsearchives.nseindia.com/content/circulars/CMTR76941.pdf
+  "2026-02-01":
+    is_trading_day: true
+    note: Union Budget Sunday session
+    source: https://nsearchives.nseindia.com/content/circulars/CMTR72349.pdf
