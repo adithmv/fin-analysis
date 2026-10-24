@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LoginLink } from "@/components/auth";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,6 +27,15 @@ export default function RootLayout({
           </Link>
           <div className="nav-label">WORKSPACE</div>
           <nav>
+            <Link href="/threads">
+              ◈ <span>Discussions</span>
+            </Link>
+            <Link href="/track-record">
+              ▧ <span>Track record</span>
+            </Link>
+            <Link href="/usage">
+              ◴ <span>Model usage</span>
+            </Link>
             <Link href="/news">
               ▤ <span>News archive</span>
             </Link>
@@ -58,7 +68,7 @@ export default function RootLayout({
               <br />
               Every action, accounted for.
             </p>
-            <span className="phase">PHASE 03 / NEWS & MEMORY</span>
+            <span className="phase">PHASE 04 / EVIDENCE & DISCUSSION</span>
           </div>
         </aside>
         <main className="workspace">
@@ -66,7 +76,7 @@ export default function RootLayout({
             <span>
               Personal research <span className="slash">/</span> Indian equities
             </span>
-            <span className="readonly">◈ Read-only workspace</span>
+            <LoginLink />
           </header>
           {children}
           <footer>

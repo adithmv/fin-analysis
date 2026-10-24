@@ -34,6 +34,14 @@ export function ResearchChart({
   events: ChartEvent[];
 }) {
   const [range, setRange] = useState("252");
+  const [focusDate, setFocusDate] = useState("");
+  useEffect(() => {
+    const date = new URLSearchParams(window.location.search).get("date");
+    if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      setFocusDate(date);
+      setRange("all");
+    }
+  }, []);
   const [indicators, setIndicators] = useState<Indicator[]>([]);
   const [signals, setSignals] = useState<Signal[]>([]);
   const [error, setError] = useState("");
@@ -249,6 +257,16 @@ export function ResearchChart({
       })
       .setData(points("volume_avg_20"));
     charts.forEach((c) => c.timeScale().fitContent());
+    if (focusDate) {
+      const index = visible.findIndex((c) => sessionDate(c.ts) >= focusDate);
+      if (index >= 0)
+        charts.forEach((c) =>
+          c.timeScale().setVisibleLogicalRange({
+            from: Math.max(0, index - 15),
+            to: Math.min(visible.length - 1, index + 15),
+          }),
+        );
+    }
     let syncing = false;
     charts.forEach((source) =>
       source.timeScale().subscribeVisibleLogicalRangeChange((next) => {
@@ -263,7 +281,7 @@ export function ResearchChart({
     return () => charts.forEach((c) => c.remove());
     // The selected date range controls all on-demand database reads.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [candles, range, indicators, signals, overlays, events]);
+  }, [candles, range, indicators, signals, overlays, events, focusDate]);
   const trend = signals.filter((s) => s.signal_key === "trend_state").at(-1);
   const flags = [
     ...new Set(

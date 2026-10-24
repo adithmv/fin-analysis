@@ -313,7 +313,13 @@ export function EventFeed({
             <div className="status-tile" key={name}>
               <div className="tile-label">
                 <span>
-                  {["ingest", "signals", "backtest", "news"].includes(name)
+                  {[
+                    "ingest",
+                    "signals",
+                    "backtest",
+                    "news",
+                    "analysis-agents",
+                  ].includes(name)
                     ? "ACTIVE MODULE"
                     : "COMING LATER"}
                 </span>

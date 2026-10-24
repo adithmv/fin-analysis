@@ -7,7 +7,11 @@ export function getBrowserClient() {
   if (!url || !key) return null;
   if (!client)
     client = createClient(url, key, {
-      auth: { persistSession: false, autoRefreshToken: false },
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+      },
     });
   return client;
 }
