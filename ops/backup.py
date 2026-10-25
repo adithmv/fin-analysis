@@ -64,7 +64,8 @@ def backup(primary,secondary):
         raise ValueError("Choose separate backup destinations")
     if not os.environ.get("DATABASE_URL"):
         raise ValueError("DATABASE_URL is not configured locally")
-    executables={name:shutil.which(name) for name in ("pg_dump","pg_restore")}
+    tool_dir=os.environ.get("POSTGRES_BIN_DIR", "").strip()
+    executables={name:shutil.which(name,path=tool_dir or None) for name in ("pg_dump","pg_restore")}
     if not all(executables.values()):
         raise ValueError("Install PostgreSQL client tools and add them to PATH")
     stamp=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")+"-"+uuid4().hex[:8]
@@ -86,7 +87,9 @@ def backup(primary,secondary):
     manifest={"created_at":datetime.now(timezone.utc).isoformat(),"sha256":checksums,
               "restore_verified":False,"cloud_upload_verified":False}
     (folder/"manifest.json").write_text(json.dumps(manifest,indent=2),encoding="utf-8")
-    secondary.mkdir(parents=True,exist_ok=True)
+    # A missing mounted/synced destination must fail, never create a local substitute.
+    if not secondary.is_dir():
+        raise ValueError("Second backup folder is unavailable; start Google Drive and retry")
     copy=secondary/stamp
     shutil.copytree(folder,copy)
     if any(digest(copy/name)!=checksum for name,checksum in checksums.items()):

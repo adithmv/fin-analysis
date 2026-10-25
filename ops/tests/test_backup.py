@@ -24,7 +24,8 @@ def test_repository_destination_is_rejected():
 
 def test_backup_checks_both_copies_and_marks_restore_pending(tmp_path,monkeypatch):
     monkeypatch.setenv("DATABASE_URL","postgresql://reader:fixture@db.example.test/postgres")
-    monkeypatch.setattr(backup.shutil,"which",lambda name:name)
+    monkeypatch.setattr(backup.shutil,"which",lambda name,**kwargs:name)
+    (tmp_path/"secondary").mkdir()
     def run(args,env=None):
         if args[0]=="pg_dump":
             assert not any("fixture" in arg for arg in args)
@@ -42,10 +43,30 @@ def test_backup_checks_both_copies_and_marks_restore_pending(tmp_path,monkeypatc
 
 def test_failed_dump_never_creates_success_manifest(tmp_path,monkeypatch):
     monkeypatch.setenv("DATABASE_URL","postgresql://reader:fixture@db.example.test/postgres")
-    monkeypatch.setattr(backup.shutil,"which",lambda name:name)
+    monkeypatch.setattr(backup.shutil,"which",lambda name,**kwargs:name)
     def fail(*args,**kwargs):
         raise RuntimeError("test failure")
     monkeypatch.setattr(backup,"run",fail)
     with pytest.raises(RuntimeError):
         backup.backup(tmp_path/"primary",tmp_path/"secondary")
     assert not list(tmp_path.rglob("manifest.json"))
+
+
+def test_unavailable_drive_keeps_local_dump_without_creating_destination(tmp_path,monkeypatch):
+    monkeypatch.setenv("DATABASE_URL","postgresql://reader:fixture@db.example.test/postgres")
+    monkeypatch.setenv("POSTGRES_BIN_DIR",str(tmp_path/"tools"))
+    def which(name, path=None):
+        assert path==str(tmp_path/"tools")
+        return name
+    monkeypatch.setattr(backup.shutil,"which",which)
+    def run(args,env=None):
+        if args[0]=="pg_dump":
+            Path(args[-1]).write_bytes(b"fixture dump contents")
+            return b""
+        return b"TABLE DATA public candles"
+    monkeypatch.setattr(backup,"run",run)
+    secondary=tmp_path/"unavailable-drive"
+    with pytest.raises(ValueError,match="unavailable"):
+        backup.backup(tmp_path/"primary",secondary)
+    assert not secondary.exists()
+    assert len(list((tmp_path/"primary").rglob("database.dump")))==1
