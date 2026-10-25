@@ -75,7 +75,7 @@ database: zero candidates in all four categories; reviewed, no deletion performe
 
 Owner chose private Telegram chat and Google Drive for the second backup copy.
 Telegram credentials were corrected locally and a live test message was received
-and confirmed by the owner. Automatic notifications remain disabled. DATABASE_URL
+and confirmed by the owner. Automatic notifications are now enabled, with Windows task `Fin Analysis Alert Checks` running every 15 minutes. A scheduled run completed with result 0 and 34 checks, no failed groups; a fresh Telegram connection test was accepted. Eleven genuine stale-data/source warnings remain. False alarms for deliberately disabled sources and the uncommissioned scheduler were fixed; failed check groups now produce incidents. All 16 alert/backup tests passed. DATABASE_URL
 and BACKUP_SECONDARY_DIR are configured in ignored `.env`; database connectivity
 and TLS to the session pooler were verified. Primary backups are outside the repo
 at `C:\dev\fin-analysis-backups`; secondary copies use

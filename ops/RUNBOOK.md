@@ -1,6 +1,6 @@
 # Operations runbook
 
-Daily backups are live. Phase 5 overall is not commissioned: market/research schedules and automatic Telegram delivery remain disabled. A private Telegram test succeeded. Five trading days unattended and a full recovery drill have not happened. See `docs/PHASE_5_PROGRESS.md` for current acceptance evidence.
+Daily backups are live. Phase 5 overall is not commissioned: market/research schedules remain disabled. Automatic alert checks and private Telegram delivery are live every 15 minutes. Five trading days unattended and a full recovery drill have not happened. See `docs/PHASE_5_PROGRESS.md` for current acceptance evidence.
 
 ## Inspect and recover jobs
 
@@ -10,7 +10,7 @@ From the repository root, use `scheduler/.venv/Scripts/python.exe scheduler/main
 
 ## Alerts
 
-Open `/alerts` for incidents even when Telegram is unavailable. Acknowledge means seen; it does not erase the failure. A healthy subsequent check resolves the incident. Check rule, subject and latest logbook entries first. Telegram delivery requires the two local credentials and a successful private-chat test before setting `notifications_enabled: true`. Normal batches are at least ten minutes apart; quiet hours suppress warnings, not critical incidents. Failed sends keep incidents visible. A crash after delivery but before receipt recording can produce a duplicate.
+Open `/alerts` for incidents even when Telegram is unavailable. Acknowledge means seen; it does not erase the failure. A healthy subsequent check resolves the incident. Check rule, subject and latest logbook entries first. Telegram delivery is enabled after a successful private-chat test. Windows task `Fin Analysis Alert Checks` runs every 15 minutes; see `alerts/README.md` for its independent setup and runtime. Normal batches are at least ten minutes apart; quiet hours suppress warnings, not critical incidents. Failed sends keep incidents visible. A crash after delivery but before receipt recording can produce a duplicate.
 
 For stale prices/signals, inspect exchange calendar, permitted data source and upstream jobs before rerunning. Do not invent missing sessions or silently mix adjusted and raw prices. For source failures, inspect robots/terms and HTTP status, then disable refused sources. For heartbeat/dead-job alerts, inspect laptop sleep, scheduler processes, queue leases and module environments. For disk/database capacity alerts, inspect usage and backup status; review a retention dry run before deleting. For model budget or verification alerts, inspect `/usage` and evidence quality; wait for budget reset or reduce scheduled work. For backup alerts, follow the backup checks below. Confirm fixes by rerunning the corresponding health check, not by manually resolving an active failure.
 

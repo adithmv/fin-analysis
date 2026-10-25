@@ -37,3 +37,39 @@ Remaining Phase 5 checks are tracked in `docs/PHASE_5_PROGRESS.md`.
 
 No monitor on this laptop can notify while the whole laptop is off. An external
 dead-man monitor would be needed for that guarantee; none is configured yet.
+
+## Live laptop monitoring
+
+As of 2026-10-25, private Telegram delivery is enabled and Windows task
+`Fin Analysis Alert Checks` runs every 15 minutes. It requires the signed-in user,
+an awake laptop and internet. It retries failures twice, two minutes apart, skips
+overlapping runs and catches missed starts when available. Market/research pipeline
+schedules remain disabled independently. The daily digest is not scheduled yet.
+
+The Windows task needs a host-accessible Python runtime. From the repository root:
+
+```powershell
+uv venv .cache/alerts-runtime/.venv --python C:/Python314/python.exe
+uv pip install --python .cache/alerts-runtime/.venv/Scripts/python.exe -r alerts/requirements-lock.txt -e ./shared
+./ops/install-alert-task.ps1
+```
+
+Run `ops/alerts.ps1` for an immediate check; inspect `.cache/alerts/last-run.log`
+and Task Scheduler's last result (0 means success). Each completed check records
+`alert_monitor_completed` with its check and delivery summary. An actual scheduled
+run passed on 2026-10-25, with 34 checks and no failed groups; Telegram separately
+accepted a live connection test. Six stale-price and five stale-source warnings
+remain genuine while collection is not commissioned. Warnings wait during
+22:00–07:00 IST quiet hours; critical incidents bypass quiet hours.
+
+Intentionally disabled sources and an intentionally stopped pipeline scheduler are
+recorded as monitoring paused, rather than failure. Stale data for enabled sources
+and watched symbols still warns. Failed check groups create their own critical
+incident and preserve prior incidents until the group succeeds. Daily backups now
+warn after two days without a successful verified filesystem copy. Cloud receipt
+and full restore checks remain separate.
+
+Notifications prioritize critical incidents and bound the batch before sending,
+so incidents omitted for message length are left pending for a later batch. Tests
+cover delivery failures, quiet hours, batch limits, disabled monitoring and check
+failures. No external monitor can detect a powered-off laptop in this setup.
