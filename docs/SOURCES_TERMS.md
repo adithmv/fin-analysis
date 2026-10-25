@@ -15,8 +15,26 @@ advice. Phase 5 requires sources that cannot be justified to stay disabled.
 | Telegram | Owner-selected outbound alerts; one batch/10 minutes | [Bot FAQ](https://core.telegram.org/bots/faq#how-do-i-avoid-hitting-limits) permits free normal bot messaging within limits. Paid broadcasting disabled. Awaiting local credentials. |
 | Gemini | Public market evidence only; 150 calls/day app cap | Phase 4 checked [pricing](https://ai.google.dev/gemini-api/docs/pricing) and [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits). No billing upgrade. Source permission still applies to submitted material. |
 
-Remaining review: all configured RSS feeds, BSE announcement access,
+Remaining review: The Hindu feed, BSE announcement access,
 and a suitable browser source. No browser site is approved yet. The daily
 pipeline remains disabled during commissioning. Official circulars were consulted
 manually to verify calendar exceptions; this does not grant automated access to
 the exchange website.
+
+## RSS commissioning — 2026-10-25
+
+Mint's [RSS page](https://www.livemint.com/rss) offers feeds for individual,
+noncommercial newsreader use. Economic Times' [RSS terms](https://economictimes.indiatimes.com/rss.cms)
+allow personal use and personal retained copies. These two feeds are enabled for
+this owner's private reader: publisher-provided headlines/snippets and links, no
+full article collection, public feed hosting, commercial redistribution or model
+training. This is a limited engineering interpretation of the personal RSS
+allowance, not a blanket licence for reuse or a public/commercial product.
+Mint's [general terms](https://www.livemint.com/terms-of-use) also restrict scraping
+and AI development; do not expand the personal RSS reader into those uses.
+
+Business Standard is disabled: its [terms](https://www.business-standard.com/terms-conditions)
+restrict automated collection, archives and AI use without written permission.
+The Hindu access review could not be completed, so its collector is disabled.
+BSE automation review remains pending and its collector is disabled. Existing
+historical data is retained. RSS collection no longer invokes exchange APIs.

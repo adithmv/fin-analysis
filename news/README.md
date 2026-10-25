@@ -1,6 +1,6 @@
 # News
 
-Manual collection of RSS titles/snippets, NSE/BSE announcements, corporate actions,
+Collection of RSS titles/snippets, NSE/BSE announcements, corporate actions,
 precision-first company links, rule-based events, CPU FinBERT sentiment and local
 MiniLM semantic memory. No full article/document downloads or cloud model calls.
 
@@ -35,9 +35,9 @@ tests run without a model download or network. Missing cache fails clearly.
 
 ## Collection and data contracts
 
-- `feeds.yaml`: four tested RSS feeds, disabled stale Moneycontrol feed, NSE and
-  BSE announcement sources. Conditional headers are saved where supplied. Polling
-  defaults to 30 minutes; HTTP 403/429/server errors retry with bounded backoff.
+- `feeds.yaml`: two enabled personal RSS feeds; other feeds and exchange
+  announcement sources remain disabled. Conditional headers are saved where supplied. Polling
+  defaults to 30 minutes; HTTP 429/server errors retry with bounded backoff; 403 stops immediately.
   Five failed polls disable a source for manual review. A failing symbol or feed
   does not prevent other symbols/sources from completing.
 - NSE uses Dalal's public session endpoint with 90-day date windows. BSE uses the
@@ -77,7 +77,37 @@ Sources: [FinBERT model card](https://huggingface.co/ProsusAI/finbert),
 Supabase Free database allowance is 500 MB; measured database size after initial
 Phase 3 processing was 51 MB. Each vector alone is about 1.5 KB, plus row/index
 overhead. Only linked canonical articles are embedded. Monitor database growth;
-no collection scheduler is installed in this phase.
+automatic RSS collection now runs every 30 minutes as described below.
+
+## Automatic RSS updates on this laptop
+
+Windows task `Fin Analysis News Updates` runs `ops/news.ps1` every 30 minutes:
+fetch enabled RSS feeds, then deduplicate, link, classify, score sentiment and embed
+locally. It processes healthy results even if another feed fails. Overlaps are
+skipped; missed starts catch up; failures get one retry after five minutes. Keep
+the laptop awake, signed in and online. Market/research pipelines in
+`config/schedule.yaml` remain disabled independently. Do not also enable news_poll
+without removing this task, or two schedulers will own news collection.
+
+Use `ops/install-news-task.ps1` to register/update the task. Start it immediately
+with `Start-ScheduledTask -TaskName 'Fin Analysis News Updates'`. Inspect
+`.cache/news-task/fetch.log`, `process.log` and the completed task result. A skipped
+overlapping trigger may show an ignored-start result while the original run remains
+active; inspect task state as well.
+
+The news environment uses host-accessible Python 3.12.14 at
+`C:/dev/tools/python-3.12.14` because Windows Task Scheduler cannot access the
+agent-managed runtime path. Rebuild against a host-installed Python 3.12 with the
+news lockfile and editable shared package. The task sets `HF_HOME` to
+`.cache/huggingface`, which contains the cached pinned models; set this same
+variable when running `download-models` during a fresh setup.
+
+The enabled feeds are Mint and Economic Times. Other sources remain disabled
+pending review or permission. RSS fetch never invokes exchange APIs and HTTP 403
+is not retried. Only publisher-supplied headlines/snippets and links are fetched
+for private noncommercial use; no full articles, republication or model training.
+Source decisions are in `docs/SOURCES_TERMS.md`. Fresh news does not refresh price
+data; event outcomes may stay pending until price collection is commissioned.
 
 ## Research and evaluation
 

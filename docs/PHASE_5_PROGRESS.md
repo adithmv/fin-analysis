@@ -2,6 +2,23 @@
 
 Updated 2026-10-25. Phase 5 is in progress, not accepted as complete.
 
+## News updates commissioned
+
+Windows task `Fin Analysis News Updates` now independently fetches enabled personal
+RSS feeds and processes them locally every 30 minutes. Market/research pipelines
+remain disabled. The initial fetch stored 84 new articles (Mint 35, Economic Times
+49); latest publication was 2026-10-25 16:48:48 UTC. The actual scheduled process
+completed with result 0 across the 848-article archive, zero failures, including
+local sentiment and embeddings. All 26 news tests passed. The next scheduled start
+was 2026-10-25 23:06:25 IST. See `news/README.md` for host runtime and model cache
+requirements. Full dashboard visual verification was unavailable in this session;
+data and processing were verified directly in the backend.
+
+RSS fetch no longer invokes exchange APIs or sources absent from configuration.
+Business Standard, The Hindu and BSE collectors are now disabled pending access
+permission/review; Mint and Economic Times remain enabled for personal RSS use.
+No live price ingestion or exchange announcement automation was enabled.
+
 ## Verified foundations
 
 - Migration 008: owner-readable operations tables; no browser write grants;
