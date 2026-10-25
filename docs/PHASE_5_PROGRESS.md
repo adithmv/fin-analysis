@@ -52,29 +52,35 @@ contexts, shared page budgets and text-hash deduplication. All live sites remain
 disabled; candidate selectors are not commissioned. AI navigation, PDF integration
 and downstream document ingestion remain unfinished.
 
-Backup tooling and `ops/RUNBOOK.md` are prepared. Four offline tests verify password
-handling, repository exclusion, second-copy checksums, config export without secrets,
-and failure without a success manifest. No real dump, cloud receipt or restore has
-been verified. Backup retention does not delete files yet.
+Daily backups are live through Windows Task Scheduler at 20:30 IST. Five offline
+backup tests passed. A real scheduled run on 2026-10-25 completed with result 0,
+producing `20261025T154041Z-d3322358`. Both local and Google Drive filesystem
+copies passed SHA-256 checks; the four files were also confirmed in Drive online.
+The laptop must be awake and signed in with Drive desktop available. See
+`ops/RUNBOOK.md` for setup, retries, runtime requirements and troubleshooting.
 
-Telegram credentials/delivery test, remaining health rules and source review,
-remaining operations views, backups and actual restore,
-retention deletion implementation, final commissioning checks,
-startup integration and five real trading days unattended.
+A two-table restore smoke test of `20261025T113836Z-8e454b4b` into disposable
+PostgreSQL 17.11 matched all 4,482 candles and six watchlist rows against production.
+Its `restore-smoke.json` report is saved beside both backup copies. The scratch
+server was stopped. Full Supabase recovery (including roles/extensions/views/RLS)
+is still pending; no backup retention deletion is enabled.
+
+Remaining health rules and source review, remaining operations views, full restore,
+retention deletion implementation, final commissioning checks, pipeline startup
+integration and five real trading days unattended remain pending.
 
 All nine jobs in expanded GitHub CI passed for a3f1e54 and adjustment commit 150593f. Security and dependency
 findings/fixes are in `PHASE_5_SECURITY.md`. Retention dry run executed against the
 database: zero candidates in all four categories; reviewed, no deletion performed.
 
-Owner chose Telegram and Google cloud storage for the second copy. Google Drive
-was suggested (not yet connected); Google Docs cannot hold a restorable dump.
-Owner reports replacing the Telegram token locally. Automatic approval review blocked
-the request to retrieve bot updates using the local token (reason: blocked by policy);
-no alternate request was attempted. Owner must fill the private chat ID locally.
-PostgreSQL DATABASE_URL and BACKUP_SECONDARY_DIR are still needed in ignored `.env`.
-Laptop is the scheduler host. Docker is installed but its engine is not running;
-the restore drill needs a local scratch Postgres instance. No external messages
-have been sent. Existing Phase 3 human-labelled news review remains deferred.
+Owner chose private Telegram chat and Google Drive for the second backup copy.
+Telegram credentials were corrected locally and a live test message was received
+and confirmed by the owner. Automatic notifications remain disabled. DATABASE_URL
+and BACKUP_SECONDARY_DIR are configured in ignored `.env`; database connectivity
+and TLS to the session pooler were verified. Primary backups are outside the repo
+at `C:\dev\fin-analysis-backups`; secondary copies use
+`G:\My Drive\Fin Analysis Backups`. Existing Phase 3 human-labelled news review
+remains deferred.
 
 The Supabase advisor found no new database security findings; its existing
 leaked-password-protection warning remains. The sole dashboard account uses a
