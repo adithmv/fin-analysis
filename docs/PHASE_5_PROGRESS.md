@@ -1,6 +1,6 @@
 # Phase 5 verification and remaining work
 
-Updated 2026-10-24. Phase 5 is in progress, not accepted as complete.
+Updated 2026-10-25. Phase 5 is in progress, not accepted as complete.
 
 ## Verified foundations
 
@@ -18,10 +18,18 @@ Updated 2026-10-24. Phase 5 is in progress, not accepted as complete.
   adjusted Yahoo rows untouched. Test approvals were synthetic and rolled back.
 - Calendar loaded for 2023-2026 (1,461 rows). Library holidays plus official
   special-session overrides now have zero conflicts with stored candle dates.
-- Two real bonus factors proposed, not approved: RELIANCE 2024-10-28 and
+- Two real bonus factors reviewed: RELIANCE 2024-10-28 and
   HDFCBANK 2025-08-26, both 0.5. Independent Yahoo comparison passed for 14
   sessions each (maximum relative errors 3.75e-8 and 2.57e-8 respectively).
-  Human approval remains pending. Signals/backtests remain raw.
+  Owner approved both in chat on 2026-10-25; decisions were recorded using the
+  audited review function. Signals 2.2.0 now use adjusted prices. Full recomputation
+  succeeded for all six active symbols (4,453 sessions, zero failures). Neither
+  affected stock retains the false possible-split flag. On the ex-dates, raw versus
+  adjusted moves are RELIANCE -49.7552% / +0.4895% and HDFCBANK -50.4404% / -0.8808%.
+- Adjusted reruns completed: 2,400 technical event-study results; 15 result rows
+  for each of four strategies (SMA crossover, RSI reversion, pattern/trend and
+  buy-and-hold); 840 news results; 780 sentiment results. Historical raw runs remain
+  in the database with their original provenance.
 - Migration 010: atomic incident recording, notification cooldown and owner-only
   operations. Repeated failing check after acknowledgement preserved one incident;
   a passing check resolved it. Transactional fixture rolled back.
@@ -31,6 +39,9 @@ Updated 2026-10-24. Phase 5 is in progress, not accepted as complete.
 - `/ops`, `/alerts`, `/documents`, `/corporate-actions` added. Playwright passed
   anonymous denial, owner session validation, invalid input, cross-origin denial,
   chart previews and mobile layout. No real approvals made by tests.
+- After the approved adjustments, charts default to the adjusted basis. TypeScript
+  checks and all four operations/research browser tests passed, covering stock
+  overlays, event-study samples, backtest details and protected operations routes.
 
 ## Pending
 
@@ -46,15 +57,22 @@ handling, repository exclusion, second-copy checksums, config export without sec
 and failure without a success manifest. No real dump, cloud receipt or restore has
 been verified. Backup retention does not delete files yet.
 
-Telegram credentials/delivery test, remaining health rules, browser guard and source review,
-remaining operations views, human adjustment approval and rerun of studies, backups and actual restore,
-retention dry-run review, security/dependency/history scans, expanded CI,
+Telegram credentials/delivery test, remaining health rules and source review,
+remaining operations views, backups and actual restore,
+retention deletion implementation, final commissioning checks,
 startup integration and five real trading days unattended.
+
+All nine jobs in expanded GitHub CI passed for a3f1e54 and adjustment commit 150593f. Security and dependency
+findings/fixes are in `PHASE_5_SECURITY.md`. Retention dry run executed against the
+database: zero candidates in all four categories; reviewed, no deletion performed.
 
 Owner chose Telegram and Google cloud storage for the second copy. Google Drive
 was suggested (not yet connected); Google Docs cannot hold a restorable dump.
-Local bot credentials and PostgreSQL DATABASE_URL requested, fields prepared in
-ignored `.env`. Laptop is the scheduler host. Docker is installed but its engine is not running;
+Owner reports replacing the Telegram token locally. Automatic approval review blocked
+the request to retrieve bot updates using the local token (reason: blocked by policy);
+no alternate request was attempted. Owner must fill the private chat ID locally.
+PostgreSQL DATABASE_URL and BACKUP_SECONDARY_DIR are still needed in ignored `.env`.
+Laptop is the scheduler host. Docker is installed but its engine is not running;
 the restore drill needs a local scratch Postgres instance. No external messages
 have been sent. Existing Phase 3 human-labelled news review remains deferred.
 
