@@ -12,3 +12,5 @@ langdetect==1.0.9
 PyYAML==6.0.3
 pytest==9.1.1
 tzdata==2026.5
+filelock==4.2.1
+setuptools==84.1.0

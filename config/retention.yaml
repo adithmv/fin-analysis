@@ -1,0 +1,19 @@
+# Review a fresh dry run before enabling any destructive retention workflow.
+enabled: false
+agent_events_success_days: 90
+health_checks_days: 30
+terminal_jobs_days: 90
+article_raw_days: 90
+keep_weekly_backups: 4
+keep_daily_backups: 7
+never_prune:
+  - candles
+  - corporate_actions
+  - adjustment_factors
+  - news_events
+  - article_sentiment
+  - analysis_reports
+  - report_outcomes
+  - backtest_runs
+  - backtest_trades
+  - signal_stats
