@@ -132,6 +132,9 @@ def main(argv=None):
 
 
 def compare(client):
+    policy = yaml.safe_load((ROOT / "config/ingest.yaml").read_text())
+    if "yfinance" in policy.get("disabled_sources", []):
+        raise ValueError("Yahoo comparison disabled by source access policy; use a permitted independent source")
     if __package__:
         from .sources.yfinance_source import YFinanceSource
     else:
