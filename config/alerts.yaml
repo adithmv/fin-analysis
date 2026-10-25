@@ -1,5 +1,5 @@
 channel: telegram
-notifications_enabled: false # Enabled once the owner supplies the local bot credentials.
+notifications_enabled: true # Private Telegram delivery verified; credentials remain local.
 minimum_notification_seconds: 600
 quiet_hours_ist: [22, 7]
 database_limit_bytes: 500000000 # Supabase Free database allowance, checked 2026-10-24.
@@ -7,6 +7,6 @@ database_warning_fraction: 0.7
 database_critical_fraction: 0.9
 minimum_disk_free_bytes: 5000000000
 scheduler_silent_minutes: 15
-backup_max_age_days: 8
+backup_max_age_days: 2 # Daily backup: alert if two days pass without a verified copy.
 verification_warning_fraction: 0.4
 feed_failure_threshold: 5

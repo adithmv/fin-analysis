@@ -21,6 +21,20 @@ else:
 ROOT=Path(__file__).resolve().parents[1]
 
 
+def notification_batch(rows):
+    """Only acknowledge incidents whose complete bounded summary fits the message."""
+    chosen=[]
+    message="Market research alerts"
+    for row in rows:
+        label="RESOLVED" if row["status"]=="resolved" else row["severity"].upper()
+        item=f"{label} · {row['rule_key'][:80]} / {row['subject'][:80]}\n{row['message'][:600]}"
+        if len(message)+len(item)+2>3900 or len(chosen)==8:
+            break
+        message+="\n\n"+item
+        chosen.append(row)
+    return chosen,message
+
+
 def quiet(now, hours):
     hour=now.astimezone(ZoneInfo("Asia/Kolkata")).hour
     start,end=hours
@@ -30,14 +44,12 @@ def quiet(now, hours):
 def notify(client, config, run_id, now):
     if not config["notifications_enabled"]:
         return {"sent": 0, "reason": "Telegram not enabled; incidents remain visible in dashboard"}
-    pending=client.table("alerts").select("*").is_("notified_at","null").eq("status","open").order("id").limit(100).execute().data
+    pending=client.table("alerts").select("*").is_("notified_at","null").eq("status","open").order("severity").order("id").limit(100).execute().data
     pending=[r for r in pending if r["severity"]=="critical" or (r["severity"]=="warning" and not quiet(now,config["quiet_hours_ist"]))]
     resolved=client.table("alerts").select("*").eq("status","resolved").contains("meta",{"resolution_pending":True}).limit(20).execute().data
-    chosen=(pending+resolved)[:8]
+    chosen,message=notification_batch(pending+resolved)
     if not chosen or not client.rpc("reserve_notification",{"p_key":"alerts","p_min_seconds":config["minimum_notification_seconds"]}).execute().data:
         return {"sent":0}
-    message="Market research alerts\n\n"+"\n\n".join(
-        f"{'RESOLVED' if r['status']=='resolved' else r['severity'].upper()} · {r['rule_key']} / {r['subject']}\n{r['message']}" for r in chosen)
     try:
         send(message)
         for row in chosen:
@@ -60,11 +72,16 @@ def check(client, config, llm, now=None):
             for row in rows:
                 client.rpc("record_health",row).execute()
             results.extend(rows)
+            client.rpc("record_health",checks.result("health_check_failed",group.__name__,"ok","Health check group completed.")).execute()
         except Exception as exc:
             failures.append(group.__name__)
             log_event(run_id,"alerts","run_check","failed",error=type(exc).__name__,output_summary=group.__name__)
+            client.rpc("record_health",checks.result("health_check_failed",group.__name__,"fail",
+                "A health check could not complete. Inspect the alert logbook; earlier incidents remain active.",severity="critical")).execute()
     delivery=notify(client,config,run_id,now)
     summary={"checks":len(results),"violations":sum(r["p_status"]!="ok" for r in results),"failed_groups":failures,**delivery}
+    client.table("health_checks").insert({"check_key":"alert_monitor_completed","subject":"local",
+        "status":"warn" if failures or delivery.get("failed") else "ok","detail":summary}).execute()
     log_event(run_id,"alerts","run_check","warning" if failures else "success",meta=summary)
     return summary
 
@@ -100,6 +117,8 @@ def main(argv=None):
     args=parser.parse_args(argv)
     client=get_client() # Loads the ignored root .env before notifier access.
     config=yaml.safe_load((ROOT/"config/alerts.yaml").read_text())
+    schedule=yaml.safe_load((ROOT/"config/schedule.yaml").read_text())
+    config["scheduler_expected"]=any(p.get("enabled",False) for p in schedule["pipelines"].values())
     llm=yaml.safe_load((ROOT/"config/llm.yaml").read_text())
     try:
         if args.command=="test-notify":

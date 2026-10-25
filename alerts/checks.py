@@ -49,6 +49,10 @@ def sources(client, config, now):
     rows = client.table("news_sources").select("source_key,enabled,consecutive_failures,last_success_at,source_type").execute().data
     checks=[]
     for row in rows:
+        if not row["enabled"]:
+            checks.append(result("feed_dead",row["source_key"],"ok",
+                "Source deliberately disabled; availability monitoring is paused.",detail={"monitoring":"disabled"}))
+            continue
         stale = not row["last_success_at"] or now-stamp(row["last_success_at"])>timedelta(hours=24)
         bad = not row["enabled"] or row["consecutive_failures"]>=config["feed_failure_threshold"] or stale
         checks.append(result("feed_dead",row["source_key"],"warn" if bad else "ok",
@@ -62,8 +66,11 @@ def infrastructure(client, config, now):
         f"{len(rows)} dead jobs. Inspect job errors, repair the cause, then retry.",len(rows),"critical",{"job_ids":[r["id"] for r in rows]})]
     heartbeat=client.table("health_checks").select("ts").eq("check_key","scheduler_heartbeat").order("ts",desc=True).limit(1).execute().data
     age=(now-stamp(heartbeat[0]["ts"])).total_seconds()/60 if heartbeat else 1e6
-    checks.append(result("scheduler_silent","local","fail" if age>config["scheduler_silent_minutes"] else "ok",
-        "Scheduler heartbeat missing or late. Check laptop power, scheduler process and database access.",round(age),"critical"))
+    expected=config.get("scheduler_expected",True)
+    checks.append(result("scheduler_silent","local","fail" if expected and age>config["scheduler_silent_minutes"] else "ok",
+        "Scheduler heartbeat missing or late. Check laptop power, scheduler process and database access." if expected else
+        "All pipeline schedules are disabled; scheduler heartbeat monitoring is paused.",round(age),"critical",
+        {"monitoring":"enabled" if expected else "disabled"}))
     size=client.rpc("database_size_bytes").execute().data
     fraction=size/config["database_limit_bytes"]
     checks.append(result("db_size","supabase","fail" if fraction>=config["database_critical_fraction"] else "warn" if fraction>=config["database_warning_fraction"] else "ok",
