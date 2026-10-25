@@ -129,7 +129,8 @@ def test_short_history_and_version_replacement(monkeypatch):
     from signals.main import run_symbol
     from types import SimpleNamespace
 
-    tables = {"candles": candles(25).to_dict("records"), "indicator_values": [], "signals": []}
+    price_table = "candles_adjusted" if CONFIG.get("price_basis") == "adjusted" else "candles"
+    tables = {price_table: candles(25).to_dict("records"), "indicator_values": [], "signals": []}
     events = []
     monkeypatch.setattr("signals.main.read_rows", lambda client, table, *args: tables[table])
     monkeypatch.setattr("signals.main.read_calendar", lambda client: {})
@@ -149,6 +150,7 @@ def test_short_history_and_version_replacement(monkeypatch):
 
     client = Client()
     assert run_symbol(client, "SHORT", CONFIG, "test")["status"] == "success"
+    assert {r["details"]["price_basis"] for r in tables["signals"] if r["signal_key"] == "trend_state"} == {CONFIG.get("price_basis", "raw")}
     assert any(args[2:4] == ("load_candles", "skipped") for args, _ in events)
     assert all(r["value"] is None for r in tables["indicator_values"] if r["series_key"] == "sma_200")
     tables["signals"].append({**tables["signals"][0], "signal_key": "obsolete_rule"})
