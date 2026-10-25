@@ -323,6 +323,8 @@ export function EventFeed({
                     "backtest",
                     "news",
                     "analysis-agents",
+                    "scheduler",
+                    "alerts",
                   ].includes(name)
                     ? "ACTIVE MODULE"
                     : "COMING LATER"}

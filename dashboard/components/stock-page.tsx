@@ -32,7 +32,7 @@ export function StockPage({ symbol }: { symbol: string }) {
     };
   }, [symbol]);
   const [candles, setCandles] = useState<Candle[]>([]);
-  const [priceBasis, setPriceBasis] = useState<"raw" | "adjusted">("raw");
+  const [priceBasis, setPriceBasis] = useState<"raw" | "adjusted">("adjusted");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   useEffect(() => {
