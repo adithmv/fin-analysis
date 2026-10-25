@@ -40,7 +40,8 @@ def sources(client, feeds):
             upsert(client, "news_sources", [row], "source_key", True)
         elif not entry["enabled"] and existing[entry["key"]]["enabled"]:
             execute(client.table("news_sources").update({"enabled":False,"notes":entry.get("notes")}).eq("source_key",entry["key"]))
-    return {r["source_key"]: r for r in read(client, "news_sources")}
+    allowed={entry["key"] for entry in feeds["sources"]}
+    return {r["source_key"]: r for r in read(client, "news_sources") if r["source_key"] in allowed}
 
 
 def collect(client, args, aliases, feeds, run_id):
@@ -57,6 +58,8 @@ def collect(client, args, aliases, feeds, run_id):
     failures = 0
     total = 0
     for key, source in configured.items():
+        if args.command == "fetch" and source["source_type"] != "rss":
+            continue
         if args.source and args.source != key:
             continue
         if args.command == "announcements" and source["source_type"] != "exchange_api":

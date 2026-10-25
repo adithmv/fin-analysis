@@ -31,7 +31,7 @@ def fetch(source, config, request=requests.get, sleep=time.sleep, on_retry=None)
             break
         except requests.RequestException:
             status = getattr(response, "status_code", None)
-            if attempt == 2 or (status is not None and status not in (403, 429, 500, 502, 503, 504)):
+            if attempt == 2 or (status is not None and status not in (429, 500, 502, 503, 504)):
                 raise
             wait = 2**attempt
             retry = response.headers.get("Retry-After") if response is not None else None

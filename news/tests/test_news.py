@@ -133,4 +133,4 @@ def test_feed_backoff(status):
             request=lambda *a, **k: response,
             sleep=waits.append,
         )
-    assert waits == [2, 2]
+    assert waits == ([] if status == 403 else [2, 2])

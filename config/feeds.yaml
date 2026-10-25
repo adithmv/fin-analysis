@@ -1,12 +1,61 @@
-user_agent: "personal-market-research/1.0 (personal, noncommercial RSS reader)"
+user_agent: personal-market-research/1.0 (personal, noncommercial RSS reader)
 default_poll_interval_minutes: 30
 timeout_seconds: 20
 max_consecutive_failures_before_disable: 5
 sources:
-  - {key: moneycontrol_markets, name: Moneycontrol, type: rss, url: "https://www.moneycontrol.com/rss/business.xml", tier: 1, enabled: false, notes: "Verified 2026-10-23: feed responds but newest item is April 2024; disabled as stale."}
-  - {key: livemint_markets, name: Livemint, type: rss, url: "https://www.livemint.com/rss/markets", tier: 1, enabled: true}
-  - {key: business_standard_markets, name: Business Standard, type: rss, url: "https://www.business-standard.com/rss/markets-106.rss", tier: 1, enabled: true}
-  - {key: thehindu_markets, name: The Hindu, type: rss, url: "https://www.thehindu.com/business/markets/feeder/default.rss", tier: 2, enabled: true}
-  - {key: economic_times_markets, name: Economic Times, type: rss, url: "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms", tier: 1, enabled: true}
-  - {key: nse_announcements, name: NSE announcements, type: exchange_api, url: "https://www.nseindia.com/companies-listing/corporate-filings-announcements", tier: 0, enabled: false, notes: "Disabled 2026-10-24: NSE terms prohibit automated collection; permission or a licensed alternative required."}
-  - {key: bse_announcements, name: BSE announcements, type: exchange_api, url: "https://www.bseindia.com/corporates/ann.html", tier: 0, enabled: true}
+- key: moneycontrol_markets
+  name: Moneycontrol
+  type: rss
+  url: https://www.moneycontrol.com/rss/business.xml
+  tier: 1
+  enabled: false
+  notes: 'Verified 2026-10-23: feed responds but newest item is April 2024; disabled
+    as stale.'
+- key: livemint_markets
+  name: Livemint
+  type: rss
+  url: https://www.livemint.com/rss/markets
+  tier: 1
+  enabled: true
+  notes: 'Reviewed 2026-10-25: publisher RSS for private noncommercial reading only;
+    titles/feed snippets, no full articles or redistribution.'
+- key: business_standard_markets
+  name: Business Standard
+  type: rss
+  url: https://www.business-standard.com/rss/markets-106.rss
+  tier: 1
+  enabled: false
+  notes: 'Disabled 2026-10-25: terms restrict automated collection and AI use; written
+    permission required.'
+- key: thehindu_markets
+  name: The Hindu
+  type: rss
+  url: https://www.thehindu.com/business/markets/feeder/default.rss
+  tier: 2
+  enabled: false
+  notes: 'Disabled 2026-10-25: source access review could not be completed; no recurring
+    collection.'
+- key: economic_times_markets
+  name: Economic Times
+  type: rss
+  url: https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms
+  tier: 1
+  enabled: true
+  notes: 'Reviewed 2026-10-25: publisher RSS personal-use allowance; titles/feed snippets
+    only, private reader, no redistribution.'
+- key: nse_announcements
+  name: NSE announcements
+  type: exchange_api
+  url: https://www.nseindia.com/companies-listing/corporate-filings-announcements
+  tier: 0
+  enabled: false
+  notes: 'Disabled 2026-10-24: NSE terms prohibit automated collection; permission
+    or a licensed alternative required.'
+- key: bse_announcements
+  name: BSE announcements
+  type: exchange_api
+  url: https://www.bseindia.com/corporates/ann.html
+  tier: 0
+  enabled: false
+  notes: 'Disabled 2026-10-25: automated announcement access review pending; excluded
+    from RSS collection.'

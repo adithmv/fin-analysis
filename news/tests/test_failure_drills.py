@@ -92,6 +92,25 @@ def test_invalid_source_does_not_stop_others_and_circuit_breaks(monkeypatch):
     assert any(a[2] == "disable_source" for a, k in logs)
 
 
+def test_rss_fetch_never_calls_exchange_sources(monkeypatch):
+    import news.main as main
+    from news.collect import announcements, rss
+    from unittest.mock import Mock
+    monkeypatch.setattr(main,"sources",lambda *a: {
+        "exchange":dict(source_type="exchange_api",enabled=True),
+        "feed":dict(source_type="rss",enabled=True,source_key="feed",consecutive_failures=0)})
+    monkeypatch.setattr(rss,"due",lambda *a:True)
+    monkeypatch.setattr(rss,"fetch",lambda *a,**k:([],{},False))
+    forbidden=Mock(side_effect=AssertionError("exchange called"))
+    monkeypatch.setattr(announcements,"fetch",forbidden)
+    monkeypatch.setattr(main,"execute",lambda *a:[])
+    monkeypatch.setattr(main,"store_articles",lambda *a:0)
+    monkeypatch.setattr(main,"log_event",lambda *a,**k:None)
+    args=SimpleNamespace(since=date(2026,1,1),symbols="TCS",source=None,command="fetch")
+    assert collect(Client(),args,ALIASES,{},"test")=={"stored":0,"failed":0}
+    forbidden.assert_not_called()
+
+
 def test_missing_model_records_failure_and_no_scores(monkeypatch):
     import news.pipeline as p
     import news.scoring.sentiment as sentiment
