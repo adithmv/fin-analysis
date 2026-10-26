@@ -49,6 +49,9 @@ export default function RootLayout({
             <Link href="/news">
               ▤ <span>News archive</span>
             </Link>
+            <Link href="/handbook">
+              ▣ <span>Project handbook</span>
+            </Link>
             <Link href="/search">
               ⌕ <span>Search stories</span>
             </Link>
