@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { createWorkspaceGuidePages } from "@/lib/handbook-workspaces";
 
 type HandbookElement =
   | { type: "heading" | "paragraph" | "bullet"; level: number; text: string }
   | { type: "table"; rows: string[][] };
-type HandbookPage = { number: number; title: string; part: string; elements: HandbookElement[] };
+type HandbookPage = { number: number; title: string; part: string; workspaceHref?: string; elements: HandbookElement[] };
 type HandbookData = { title: string; updated: string; pages: HandbookPage[] };
 
 export default function HandbookApp() {
@@ -23,7 +25,10 @@ export default function HandbookApp() {
       })
       .then((data) => {
         if (!alive) return;
-        setBook(data);
+        setBook({
+          ...data,
+          pages: [...data.pages, ...createWorkspaceGuidePages(data.pages.length)],
+        });
         const saved = Number(window.localStorage.getItem("fin-handbook-page"));
         if (Number.isInteger(saved) && saved >= 0 && saved < data.pages.length) setActive(saved);
       })
@@ -99,6 +104,11 @@ export default function HandbookApp() {
             <article className="handbook-article">
               <div className="handbook-article-part">{selectedPage.part}</div>
               <h2>{selectedPage.title}</h2>
+              {selectedPage.workspaceHref && (
+                <Link className="handbook-open-workspace" href={selectedPage.workspaceHref}>
+                  Open this workspace →
+                </Link>
+              )}
               {selectedPage.elements.map((element, index) => {
                 if (element.type === "table") return (
                   <div className="handbook-table-wrap" key={index}>
