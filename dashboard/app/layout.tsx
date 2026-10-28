@@ -64,6 +64,9 @@ export default function RootLayout({
             <Link href="/stocks">
               ▥ <span>Watchlist</span>
             </Link>
+            <Link href="/scanner">
+              ◈ <span>Potential stocks</span>
+            </Link>
             <Link href="/logbook">
               ≡ <span>Logbook</span>
             </Link>

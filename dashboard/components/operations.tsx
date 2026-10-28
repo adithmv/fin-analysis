@@ -102,6 +102,15 @@ export function Operations({
         <Link href="/documents">Documents</Link> ·{" "}
         <Link href="/corporate-actions">Adjustment review</Link>
       </p>
+      {view === "alerts" && (
+        <p className="research-note">
+          Looking for market candidates? Open the{" "}
+          <Link className="small-link" href="/scanner">
+            NSE-wide potential stock screen →
+          </Link>
+          . System incidents and market candidates are shown separately.
+        </p>
+      )}
       {view === "jobs" && (
         <p className="research-note">
           Scheduler heartbeat:{" "}

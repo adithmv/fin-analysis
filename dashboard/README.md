@@ -1,5 +1,12 @@
 # Dashboard
 
+`/scanner` is a private, on-demand momentum screen over the NSE cash market. It
+uses NSE's official CM Market Live MCP snapshot, requires the owner login, and
+keeps market responses in a short process-memory cache only. It does not use the
+watchlist or send prices to the model provider. Use it for personal research;
+the screen is informational and not a buy/sell recommendation. See
+`docs/SOURCES_TERMS.md` for data scope and limitations.
+
 Next.js viewer for market data, research, and the logbook. Phase 4 adds single-owner login and insert-only research requests; the browser never writes messages or reports. Subscribes to events/candles via Supabase
 Realtime and refetches after reconnect; a 15-second poll covers missed messages.
 

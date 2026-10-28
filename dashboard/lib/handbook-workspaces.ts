@@ -30,6 +30,7 @@ const guides: WorkspaceGuide[] = [
     use: [
       "To see what the system just did, open Live activity, then follow an event into the Logbook for its full record.",
       "To inspect a stock, start at Watchlist and open its symbol page. Use the News archive for related headlines and the Logbook for pipeline activity.",
+      "To discover candidates beyond your watchlist, open Potential stocks for the NSE-wide momentum screen.",
       "To inspect news, use News archive for filters and original sources, then Search stories to find similar items from the stored archive.",
       "To assess evidence, use Signal Lab for historical event studies, Backtests for saved strategy runs, and Track record for outcomes of research reports.",
       "To investigate a failed or delayed process, use Operations for jobs and Alerts for incidents; check Source health when news collection is stale or quiet.",
@@ -85,6 +86,30 @@ const guides: WorkspaceGuide[] = [
     limits: [
       "This page displays the configured active watchlist; it does not add symbols or fetch fresh prices on demand.",
       "The stock detail page may contain historical material. Check the date, source, and adjusted/raw price basis before comparing values.",
+    ],
+  },
+  {
+    title: "Potential stocks",
+    path: "/scanner",
+    purpose: "An on-demand NSE-wide screen that finds listed market instruments with positive short-term momentum and sufficient traded value, without limiting results to the personal watchlist.",
+    operation: "The owner-only page requests current cash-market snapshots from NSE's official CM Market Live MCP interface. It screens instruments that are up both today and over 30 days, applies the selected traded-value floor, and ranks the remaining rows by relative 30-day return, daily move, 52-week range position, and traded value. Results are held in a short server-memory cache; they are not written to Supabase or sent to Gemini.",
+    use: [
+      "Open Potential stocks from the workspace navigation or the link on Alerts. Sign in with the owner account to load a scan.",
+      "Choose a minimum daily traded value to filter thinly traded instruments. Lower the floor to see more results; higher floors favor more active listings.",
+      "Turn on Include NSE SME listings if you want the smaller-company segment included. SME symbols are marked in the table.",
+      "Read each symbol's current price, move today, 30-day move, 52-week range position, traded value in crore rupees, and relative screen score.",
+      "Use Refresh scan to request a new snapshot. Check the as-of time before interpreting any row.",
+    ],
+    read: [
+      "The score is a relative ranking: 35% 30-day return rank, 25% daily move rank, 20% position in the 52-week range, and 20% traded-value rank. It is not a probability or forecast.",
+      "Only symbols up today and over 30 days and meeting the chosen turnover floor appear. Other strategies, such as value or recovery screens, are not part of this view.",
+      "NSE says its live market snapshot is delayed by about 1–3 minutes. Outside market hours, the timestamp may describe the latest available snapshot rather than a live update.",
+    ],
+    limits: [
+      "This first scan covers NSE only; BSE-only listings are not included. NSE equity-market data can contain ETFs, REITs/InvITs, and partly paid shares as well as ordinary shares.",
+      "SME listings are excluded until you enable the toggle. Thin trading and price limits can make their displayed moves especially risky to interpret.",
+      "This is a personal informational screen, not investment advice, a buy/sell signal, an order tool, or a guaranteed prediction. NSE's MCP is not intended for commercial deployment or trading use.",
+      "The screen does not retrieve long histories or send candidates to Telegram. Check the source and date before using a result in a separate analysis.",
     ],
   },
   {

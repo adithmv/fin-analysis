@@ -1,10 +1,12 @@
 # Source access review
 
-Review date: 2026-10-25. This records engineering enablement decisions, not legal
-advice. Phase 5 requires sources that cannot be justified to stay disabled.
+Review dates: initial review 2026-10-25; NSE MCP 2026-10-28. This records
+engineering enablement decisions, not legal advice. Phase 5 requires sources
+that cannot be justified to stay disabled.
 
 | Source | Access and rate | Finding and decision |
 | --- | --- | --- |
+| NSE official CM Market Live MCP | Read-only, no-auth interface; snapshots are about 1–3 minutes delayed | Added 2026-10-28 for the owner's private, local research screen. NSE's [MCP terms](https://www.nseindia.com/nse-mcp) limit use to informational/non-commercial purposes and prohibit commercial exploitation and AI training/fine-tuning. The scanner does not persist or send its quotes to Gemini. This source covers NSE only; the NSE equity segment can include ETFs, REITs/InvITs and partly paid shares per the [securities listing page](https://www.nseindia.com/static/market-data/securities-available-for-trading). Not for trading or investment advice. |
 | NSE (jugaad, OpenChart fallback, announcements and corporate actions) | Website-backed libraries; previously daily prices/hourly announcements | [Terms](https://www.nseindia.com/static/nse-terms-of-use) section 9 prohibits systematic/automated collection. Disable these collectors pending permission or a licensed alternative. Existing data retained. |
 | Yahoo Finance | yfinance; daily sample | [Provider terms](https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html?ncid=mbr_idnedulnk00000001), automated-collection restriction, verified 2026-10-25: express prior permission required. Disabled ingestion and independent-comparison fetches. Earlier comparison results remain historical evidence; no new requests. Existing raw NSE series cannot be silently mixed with Yahoo's split-adjusted history. |
 | SEBI | Browser candidate | [Website policy](https://www.sebi.gov.in/website-policy.html) requires permission for reproduction; not enabled. |
