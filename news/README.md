@@ -33,6 +33,11 @@ Database reads/writes still need internet because this installation uses hosted
 Supabase. Fully disconnected end-to-end processing is not supported; pure stage
 tests run without a model download or network. Missing cache fails clearly.
 
+NSE announcement and corporate-action collection defaults to active NSE equity
+watchlist symbols. A manual `--symbols` selection is also restricted to those
+active equities; remove a stock from the dashboard to exclude it from future
+targeted collection jobs.
+
 ## Collection and data contracts
 
 - `feeds.yaml`: two enabled personal RSS feeds; other feeds and exchange

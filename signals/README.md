@@ -1,7 +1,8 @@
 # Signals
 
-Computes deterministic daily indicators and research signals. Reads `candles` and
-`watchlist`; writes `indicator_values`, `signals`, and `agent_events`. No imports
+Computes deterministic daily indicators and research signals for active NSE
+watchlist equities. Reads `candles` and `watchlist`; writes `indicator_values`,
+`signals`, and `agent_events`. `--all` selects only active `kind=equity` rows. No imports
 from ingest or backtest. Configuration: root `.env` and `config/signals.yaml`.
 
 ## Run

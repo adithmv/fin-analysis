@@ -4,8 +4,9 @@ Fetches completed daily NSE equity candles with validation and fallback.
 
 ## Contracts
 
-Reads: `watchlist`, latest `candles`, NSE through jugaad-data, OpenChart, Yahoo.
-Writes: syncs `watchlist` from YAML; upserts `candles`; appends `agent_events`.
+Reads: active `watchlist`, latest `candles`, NSE through configured adapters.
+Writes: seeds `watchlist` from YAML only when it has no NSE rows; afterwards the
+database active list is authoritative. Upserts `candles` and appends `agent_events`.
 No imports from other modules except `shared`. Database schema: `db/migrations/001_init.sql`.
 Daily `ts` is the trading date at 00:00 Asia/Kolkata, stored as UTC (for example,
 2026-10-22 becomes 2026-10-21T18:30:00Z). Chart dates convert back to IST.
@@ -13,8 +14,9 @@ Daily `ts` is the trading date at 00:00 Asia/Kolkata, stored as UTC (for example
 ## Setup and run
 
 Install the root `requirements-lock.txt` and editable `shared` package. Set
-`SUPABASE_URL` and `SUPABASE_SERVICE_KEY` in root `.env`. Configure
-`config/watchlist.yaml` and `config/ingest.yaml`.
+`SUPABASE_URL` and `SUPABASE_SERVICE_KEY` in root `.env`. `config/watchlist.yaml`
+provides defaults for a fresh database; change active stocks from the dashboard
+after the first seed. Configure approved price sources in `config/ingest.yaml`.
 
 ```sh
 python ingest/main.py --all

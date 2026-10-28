@@ -25,7 +25,15 @@ def freshness(client, config, now):
     if not sessions:
         raise ValueError("No recent sessions")
     checks = [result("calendar_missing", "NSE", "ok", "Calendar is available")]
-    watch = client.table("watchlist").select("symbol").eq("active",True).eq("exchange","NSE").execute().data
+    watch = (
+        client.table("watchlist")
+        .select("symbol")
+        .eq("active", True)
+        .eq("exchange", "NSE")
+        .eq("kind", "equity")
+        .execute()
+        .data
+    )
     for row in watch:
         symbol = row["symbol"]
         candles = client.table("candles").select("ts,volume").eq("symbol",symbol).eq("exchange","NSE").eq("timeframe","1d").order("ts",desc=True).limit(15).execute().data

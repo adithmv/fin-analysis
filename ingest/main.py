@@ -144,15 +144,29 @@ class Pipeline:
         symbols = list(dict.fromkeys(s.upper().strip() for s in watchlist["symbols"] + list(indices)))
         if watchlist["exchange"] != "NSE" or any(not re.fullmatch(r"[A-Z0-9&._-]{1,40}", s) for s in symbols):
             raise ValueError("Phase 1 supports valid NSE symbols only")
-        existing = self.client.table("watchlist").select("symbol").eq("exchange", "NSE").execute().data
+        existing = (
+            self.client.table("watchlist")
+            .select("symbol,active,kind")
+            .eq("exchange", "NSE")
+            .execute()
+            .data
+        )
+        # YAML supplies the initial defaults only. The database is the source of
+        # truth after bootstrap so dashboard additions/removals survive each run.
+        if existing:
+            active_equities = sum(
+                row.get("active") is True and row.get("kind", "equity") == "equity"
+                for row in existing
+            )
+            self.event(
+                "sync_watchlist",
+                "success",
+                output_summary=f"Preserved {active_equities} active NSE equities; configured list is seed-only",
+            )
+            return
         rows = [{"symbol": s, "exchange": "NSE", "active": True, "kind": "index" if s in indices else "equity"} for s in symbols]
-        rows += [
-            {"symbol": r["symbol"], "exchange": "NSE", "active": False}
-            for r in existing
-            if r["symbol"] not in symbols
-        ]
         bulk_upsert(self.client, "watchlist", rows, "symbol,exchange")
-        self.event("sync_watchlist", "success", output_summary=f"{len(symbols)} active NSE symbols")
+        self.event("sync_watchlist", "success", output_summary=f"Seeded {len(symbols)} default NSE symbols")
 
     def process(self, symbol, end, *, since=None, days=None, sources=None):
         latest = (

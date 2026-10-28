@@ -1,5 +1,5 @@
 import { authorizeOwner } from "@/lib/ops-server";
-import { scanNseMarket } from "@/lib/nse-market";
+import { searchNseEquities } from "@/lib/nse-equity-catalog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,13 +8,11 @@ export const revalidate = 0;
 export async function GET(request: Request) {
   try {
     await authorizeOwner(request);
-    const url = new URL(request.url);
-    const includeSme = url.searchParams.get("includeSme") === "true";
-    const minTurnoverCr = Number(url.searchParams.get("minTurnoverCr") || "1");
-    if (![0, 0.5, 1, 5, 10].includes(minTurnoverCr)) {
-      return Response.json({ error: "Choose a supported liquidity filter." }, { status: 400 });
+    const query = new URL(request.url).searchParams.get("q")?.trim() || "";
+    if (query.length < 2 || query.length > 80) {
+      return Response.json({ items: [], retrievedAt: null });
     }
-    const result = await scanNseMarket({ includeSme, minTurnoverCr });
+    const result = await searchNseEquities(query);
     return Response.json(result, {
       headers: { "Cache-Control": "private, no-store" },
     });
@@ -26,7 +24,7 @@ export async function GET(request: Request) {
       {
         error:
           status === 503
-            ? "NSE market data is temporarily unavailable. Try refreshing in a few minutes."
+            ? "The NSE stock list is temporarily unavailable. Try again shortly."
             : message,
       },
       { status, headers: { "Cache-Control": "private, no-store" } },

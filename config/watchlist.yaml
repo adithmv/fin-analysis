@@ -1,4 +1,6 @@
 exchange: NSE
+# These symbols seed a new database once. The dashboard's active watchlist is
+# authoritative after the first seed.
 symbols:
   - RELIANCE
   - TCS

@@ -50,11 +50,21 @@ def collect(client, args, aliases, feeds, run_id):
     now = datetime.now(ZoneInfo("Asia/Kolkata"))
     since = args.since or (now.date() - timedelta(days=7))
     configured = sources(client, feeds)
+    active_symbols = {
+        row["symbol"]
+        for row in read(
+            client,
+            "watchlist",
+            {"active": True, "exchange": "NSE", "kind": "equity"},
+        )
+    }
     symbols = (
-        [s.strip().upper() for s in args.symbols.split(",")]
+        list(dict.fromkeys(s.strip().upper() for s in args.symbols.split(",")))
         if args.symbols
-        else [r["symbol"] for r in read(client, "watchlist", {"active": True, "kind": "equity"})]
+        else sorted(active_symbols)
     )
+    if any(symbol not in active_symbols for symbol in symbols):
+        raise ValueError("Select active NSE equities from the watchlist")
     failures = 0
     total = 0
     for key, source in configured.items():

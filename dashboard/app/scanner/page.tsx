@@ -1,5 +1,5 @@
-import { MarketScanner } from "@/components/market-scanner";
+import { redirect } from "next/navigation";
 
-export default function Page() {
-  return <MarketScanner />;
+export default function ScannerPage() {
+  redirect("/stocks#find-stocks");
 }

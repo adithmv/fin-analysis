@@ -229,19 +229,23 @@ def main(argv=None):
     try:
         config = yaml.safe_load(args.config.read_text())
         client = get_client()
+        active_symbols = {
+            row["symbol"]
+            for row in client.table("watchlist")
+            .select("symbol")
+            .eq("active", True)
+            .eq("exchange", "NSE")
+            .eq("kind", "equity")
+            .execute()
+            .data
+        }
         symbols = (
-            [
-                r["symbol"]
-                for r in client.table("watchlist")
-                .select("symbol")
-                .eq("active", True)
-                .eq("exchange", "NSE")
-                .execute()
-                .data
-            ]
+            sorted(active_symbols)
             if args.all
             else list(dict.fromkeys(s.strip().upper() for s in args.symbols.split(",")))
         )
+        if not symbols or any(symbol not in active_symbols for symbol in symbols):
+            raise ValueError("Select active NSE equities from the watchlist")
         if config["timeframe"] != "1d":
             raise ValueError("Only daily signals supported")
         log_event(run_id, "signals", "run_start", "started", input_summary=f"{len(symbols)} symbols")

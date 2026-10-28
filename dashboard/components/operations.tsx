@@ -104,11 +104,11 @@ export function Operations({
       </p>
       {view === "alerts" && (
         <p className="research-note">
-          Looking for market candidates? Open the{" "}
-          <Link className="small-link" href="/scanner">
-            NSE-wide potential stock screen →
+          To choose which stocks receive future checks, use{" "}
+          <Link className="small-link" href="/stocks#find-stocks">
+            Find stocks in your watchlist →
           </Link>
-          . System incidents and market candidates are shown separately.
+          . Only active watchlist equities are included in technical signal and freshness checks.
         </p>
       )}
       {view === "jobs" && (
