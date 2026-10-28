@@ -35,6 +35,12 @@ consecutive discussion failures; recent verified-claim fraction. Verification
 fraction is a mechanical validation metric, not model accuracy.
 Remaining Phase 5 checks are tracked in `docs/PHASE_5_PROGRESS.md`.
 
+When `daily_close` is disabled, stale watched-symbol closes remain visible as
+warnings that say collection is paused. Once that schedule is enabled, two or
+more missing trading sessions become critical again. The warning does not mean
+the stored price is current; use the displayed stale status until an approved
+market-data source is commissioned.
+
 No monitor on this laptop can notify while the whole laptop is off. An external
 dead-man monitor would be needed for that guarantee; none is configured yet.
 

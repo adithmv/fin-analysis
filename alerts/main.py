@@ -119,6 +119,7 @@ def main(argv=None):
     config=yaml.safe_load((ROOT/"config/alerts.yaml").read_text())
     schedule=yaml.safe_load((ROOT/"config/schedule.yaml").read_text())
     config["scheduler_expected"]=any(p.get("enabled",False) for p in schedule["pipelines"].values())
+    config["price_ingestion_expected"]=schedule["pipelines"].get("daily_close",{}).get("enabled",False)
     llm=yaml.safe_load((ROOT/"config/llm.yaml").read_text())
     try:
         if args.command=="test-notify":

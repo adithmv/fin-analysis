@@ -31,8 +31,18 @@ def freshness(client, config, now):
         candles = client.table("candles").select("ts,volume").eq("symbol",symbol).eq("exchange","NSE").eq("timeframe","1d").order("ts",desc=True).limit(15).execute().data
         latest = stamp(candles[0]["ts"]).astimezone(ZoneInfo("Asia/Kolkata")).date().isoformat() if candles else ""
         stale = sum(day>latest for day in sessions)
-        checks.append(result("ingest_stale",symbol,"fail" if stale>=2 else "warn" if stale else "ok",
-            f"{symbol}: {stale} expected sessions missing at the end. Check ingest jobs, source status and calendar.",stale,"critical" if stale>=2 else "warning"))
+        if config.get("price_ingestion_expected", True):
+            status = "fail" if stale >= 2 else "warn" if stale else "ok"
+            severity = "critical" if stale >= 2 else "warning"
+            message = f"{symbol}: {stale} expected sessions missing at the end. Check ingest jobs, source status and calendar."
+            detail = None
+        else:
+            status = "warn" if stale else "ok"
+            severity = "warning"
+            message = (f"{symbol}: {stale} expected sessions missing; market-price collection is paused. "
+                       "Treat the stored close as stale until an approved source is commissioned.")
+            detail = {"monitoring": "paused"} if stale else None
+        checks.append(result("ingest_stale",symbol,status,message,stale,severity,detail))
         zero = 0
         for candle in candles:
             if candle["volume"] != 0:
