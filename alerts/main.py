@@ -8,6 +8,7 @@ import sys
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 import yaml
+from shared.control_room import read_control_settings
 from shared.db import get_client
 from shared.logbook import log_event
 
@@ -117,6 +118,9 @@ def main(argv=None):
     args=parser.parse_args(argv)
     client=get_client() # Loads the ignored root .env before notifier access.
     config=yaml.safe_load((ROOT/"config/alerts.yaml").read_text())
+    controls=read_control_settings()
+    if isinstance(controls.get("telegramNotifications"),bool):
+        config["notifications_enabled"]=controls["telegramNotifications"]
     schedule=yaml.safe_load((ROOT/"config/schedule.yaml").read_text())
     config["scheduler_expected"]=any(p.get("enabled",False) for p in schedule["pipelines"].values())
     config["price_ingestion_expected"]=schedule["pipelines"].get("daily_close",{}).get("enabled",False)

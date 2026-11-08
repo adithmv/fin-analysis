@@ -772,6 +772,24 @@ footer {
 .control-card {
   padding: 20px;
 }
+.control-card.is-locked {
+  background: #f4f5f4;
+  border-color: #e2e5e3;
+}
+.control-card.is-locked h3 {
+  color: #66736f;
+}
+.control-card.is-locked .control-toggle {
+  opacity: 0.5;
+}
+.control-single-card {
+  max-width: 720px;
+}
+.control-failure-count {
+  margin-left: auto;
+  color: #9b6540;
+  font-size: 10px;
+}
 .control-card-heading {
   align-items: center;
 }
@@ -865,6 +883,23 @@ footer {
 .control-key-panel {
   padding: 20px;
 }
+.control-key-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.control-key-heading h3 {
+  margin: 0 0 6px;
+  color: #253c35;
+  font: 700 14px Manrope, sans-serif;
+}
+.control-key-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
 .control-key-form {
   display: flex;
   align-items: flex-end;
@@ -902,6 +937,9 @@ footer {
   }
   .control-key-form button {
     width: 100%;
+  }
+  .control-key-heading {
+    align-items: flex-start;
   }
 }
 

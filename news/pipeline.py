@@ -26,7 +26,22 @@ def process(client, config, aliases, rules, feeds, run_id, stage=None):
     def log(action, status="success", **kw):
         log_event(run_id, "news", action, status, **kw)
 
-    stages = [stage] if stage else ["dedupe", "link", "classify", "sentiment", "embed"]
+    all_stages = ["dedupe", "link", "classify", "sentiment", "embed"]
+    enabled = config.get("processing_areas", {name: True for name in all_stages})
+    if stage:
+        if stage not in all_stages:
+            raise ValueError("Unsupported news processing stage")
+        if not enabled.get(stage, True):
+            log("process_stage", "skipped", tool=stage, output_summary="Paused in Control Room")
+            return {"articles": len(rows), "failed": 0, "skipped": [stage]}
+        stages = [stage]
+    else:
+        stages = [name for name in all_stages if enabled.get(name, True)]
+        for name in all_stages:
+            if name not in stages:
+                log("process_stage", "skipped", tool=name, output_summary="Paused in Control Room")
+    if not stages:
+        return {"articles": len(rows), "failed": 0, "skipped": all_stages}
     if "dedupe" in stages:
         original = {r["id"]: (r["dedupe_group_id"], r["is_duplicate"]) for r in rows}
         rows = deduplicate(rows, config["dedupe"])

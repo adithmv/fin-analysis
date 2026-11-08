@@ -8,6 +8,7 @@ import sys
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 import yaml
+from shared.control_room import enabled_map, read_control_settings
 from shared.db import get_client
 from shared.logbook import log_event, sanitize
 
@@ -18,10 +19,27 @@ from news.storage import read, execute, upsert, store_articles  # noqa: E402
 
 
 def settings():
-    return tuple(
+    config, aliases, rules, feeds = tuple(
         yaml.safe_load((ROOT / "config" / name).read_text(encoding="utf-8"))
         for name in ("news.yaml", "aliases.yaml", "news_events.yaml", "feeds.yaml")
     )
+    controls = read_control_settings()
+    manual_sources = controls.get("newsSources")
+    if not isinstance(manual_sources, dict):
+        manual_sources = {}
+    for source in feeds["sources"]:
+        manual = manual_sources.get(source["key"])
+        if isinstance(manual, bool) and source["key"] in (
+            "livemint_markets",
+            "economic_times_markets",
+        ):
+            source["enabled"] = manual
+    config["processing_areas"] = enabled_map(
+        controls,
+        "newsProcessing",
+        {"dedupe": True, "link": True, "classify": True, "sentiment": True, "embed": True},
+    )
+    return config, aliases, rules, feeds
 
 
 def sources(client, feeds):

@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import yaml
 from shared.db import get_client
+from shared.control_room import enabled_map, read_control_settings
 from shared.logbook import log_event, sanitize
 
 if __package__:
@@ -71,9 +72,28 @@ def config_hash(config):
 def compute(frame, config):
     values = indicators(frame, config)
     states, rows = trend_state.compute(frame, values, config)
-    rows += patterns(frame, config["patterns"], states)
-    rows += crossovers.compute(frame, values, config)
-    rows += levels.compute(frame, config["levels"]["swing_window"])
+    areas = config.get(
+        "technical_areas",
+        {"trend": True, "momentum": True, "volatility": True, "volume": True, "patterns": True, "levels": True},
+    )
+    rule_rows = crossovers.compute(frame, values, config)
+    def area_for(row):
+        key = row["signal_key"]
+        if key.startswith(("sma_", "new_")):
+            return "trend"
+        if key.startswith(("macd_", "rsi_")):
+            return "momentum"
+        if key.startswith("bb_"):
+            return "volatility"
+        if key == "volume_spike":
+            return "volume"
+        return None
+
+    rows += [row for row in rule_rows if (area := area_for(row)) is None or areas.get(area, True)]
+    if areas.get("patterns", True):
+        rows += patterns(frame, config["patterns"], states)
+    if areas.get("levels", True):
+        rows += levels.compute(frame, config["levels"]["swing_window"])
     rows += quality(frame, config)
     digest = hashlib.sha256()
     signatures = []
@@ -228,6 +248,16 @@ def main(argv=None):
     run_id = str(uuid4())
     try:
         config = yaml.safe_load(args.config.read_text())
+        controls = read_control_settings()
+        config["technical_areas"] = enabled_map(
+            controls,
+            "technicalAreas",
+            {"trend": True, "momentum": True, "volatility": True, "volume": True, "patterns": True, "levels": True},
+        )
+        revision = controls.get("technicalConfigRevision", 0)
+        if type(revision) is not int or revision < 0:
+            revision = 0
+        config["logic_version"] = f"{config['logic_version']}-control-{revision}"
         client = get_client()
         active_symbols = {
             row["symbol"]

@@ -4,6 +4,7 @@ $dashboardRoot = Join-Path $projectRoot 'dashboard'
 $url = 'http://127.0.0.1:3000/handbook'
 $logDirectory = Join-Path $projectRoot '.cache\dashboard'
 $logPath = Join-Path $logDirectory 'startup.log'
+$eventLogPath = Join-Path $logDirectory 'startup-events.log'
 $nodePath = (Get-Command node.exe -ErrorAction Stop).Source
 $nextPath = Join-Path $dashboardRoot 'node_modules\next\dist\bin\next'
 New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
@@ -36,4 +37,4 @@ for ($attempt = 0; $attempt -lt 40; $attempt++) {
 }
 if (!$ready) { throw "Fin Analysis did not become ready. Check $logDirectory" }
 Start-Process $url
-Add-Content -LiteralPath $logPath -Value ("{0:o} Handbook app opened at {1}" -f (Get-Date), $url)
+Add-Content -LiteralPath $eventLogPath -Value ("{0:o} Handbook app opened at {1}" -f (Get-Date), $url)

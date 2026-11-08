@@ -24,7 +24,7 @@ npm run dev
 Open http://127.0.0.1:3000. For production locally: `npm run build`, then
 `npm start`. Both servers bind to loopback. Pages:
 
-- `/control-room`: owner-only switches for local alert, news and backup tasks; update the Gemini API key without displaying its saved value.
+- `/control-room`: owner-only controls for local tasks, approved news feeds and processing stages, technical signal areas, Telegram delivery, and local credential replacement. Secret values are never returned to the browser.
 - `/`: live activity, module status, filters and event details.
 - `/login`: sign in using locally configured owner credentials.
 - `/threads` and `/threads/[id]`: private live discussions, evidence inspection, reports and queued questions.
