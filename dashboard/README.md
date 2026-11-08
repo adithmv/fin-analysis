@@ -24,6 +24,7 @@ npm run dev
 Open http://127.0.0.1:3000. For production locally: `npm run build`, then
 `npm start`. Both servers bind to loopback. Pages:
 
+- `/control-room`: owner-only switches for local alert, news and backup tasks; update the Gemini API key without displaying its saved value.
 - `/`: live activity, module status, filters and event details.
 - `/login`: sign in using locally configured owner credentials.
 - `/threads` and `/threads/[id]`: private live discussions, evidence inspection, reports and queued questions.
@@ -56,6 +57,11 @@ network disconnect/reconnect, overlays, signal filters, Signal Lab, and benchmar
 comparisons. The live-delivery test invokes the root Python
 environment to write one clearly named verification event; no secrets enter the
 browser. Tests need the initial watchlist ingestion completed.
+
+The local production app is launched from the **Fin Analysis** desktop shortcut.
+Run `ops/install-fin-analysis-shortcut.ps1` to create or refresh the shortcut and
+remove the former Windows sign-in task. The key editor updates only
+`GEMINI_API_KEY` in the ignored root `.env`; it never returns the saved value.
 
 Charts use Lightweight Charts under Apache-2.0 with TradingView attribution.
 Next.js generates `AGENTS.md`; keep its version-specific guidance in the repo.

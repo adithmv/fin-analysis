@@ -1,6 +1,16 @@
 # Phase 5 verification and remaining work
 
-Updated 2026-10-25. Phase 5 is in progress, not accepted as complete.
+Updated 2026-11-08. Phase 5 is in progress, not accepted as complete.
+
+## Current laptop controls
+
+The dashboard now starts only when the owner clicks the **Fin Analysis** desktop
+shortcut; the former Windows sign-in task was removed. `/control-room` provides
+owner-only switches for the registered alert, news and daily backup tasks and a
+masked Gemini key replacement form. At this update, daily backup remains enabled;
+alert checks and news updates are paused. Market-price collection and the main
+research pipeline remain disabled. Historical commissioning evidence below
+describes earlier runs and does not mean those paused tasks are currently active.
 
 ## News updates commissioned
 

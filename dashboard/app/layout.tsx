@@ -28,6 +28,9 @@ export default function RootLayout({
           </Link>
           <div className="nav-label">WORKSPACE</div>
           <nav>
+            <Link href="/control-room">
+              ⊞ <span>Control Room</span>
+            </Link>
             <Link href="/ops">
               ⚙ <span>Operations</span>
             </Link>

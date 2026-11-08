@@ -1,6 +1,18 @@
 # Operations runbook
 
-Daily backups are live. Phase 5 overall is not commissioned: market/research schedules remain disabled. Automatic alert checks and private Telegram delivery are live every 15 minutes. Five trading days unattended and a full recovery drill have not happened. See `docs/PHASE_5_PROGRESS.md` for current acceptance evidence.
+As of 2026-11-08, the daily backup task is enabled. News updates and alert checks
+are paused; turn them on or off from the owner-only `/control-room` page. The
+main market/research pipeline remains disabled and Phase 5 is not commissioned.
+Five unattended trading days and a full recovery drill have not happened. See
+`docs/PHASE_5_PROGRESS.md` for verification history and remaining acceptance work.
+
+## Start the dashboard
+
+The dashboard does not start at Windows sign-in. Run
+`ops/install-fin-analysis-shortcut.ps1` once to create the **Fin Analysis**
+desktop shortcut and remove the old sign-in task. Click the shortcut to start
+the local server and open the handbook. Starting it again while it is already
+running opens the existing dashboard.
 
 ## Inspect and recover jobs
 
@@ -10,7 +22,7 @@ From the repository root, use `scheduler/.venv/Scripts/python.exe scheduler/main
 
 ## Alerts
 
-Open `/alerts` for incidents even when Telegram is unavailable. Acknowledge means seen; it does not erase the failure. A healthy subsequent check resolves the incident. Check rule, subject and latest logbook entries first. Telegram delivery is enabled after a successful private-chat test. Windows task `Fin Analysis Alert Checks` runs every 15 minutes; see `alerts/README.md` for its independent setup and runtime. Normal batches are at least ten minutes apart; quiet hours suppress warnings, not critical incidents. Failed sends keep incidents visible. A crash after delivery but before receipt recording can produce a duplicate.
+Open `/alerts` for incidents even when Telegram is unavailable. Acknowledge means seen; it does not erase the failure. A healthy subsequent check resolves the incident. Check rule, subject and latest logbook entries first. Telegram delivery passed a private-chat test. The `Fin Analysis Alert Checks` task is currently paused; when enabled in `/control-room`, it checks every 15 minutes. Normal batches are at least ten minutes apart; quiet hours suppress warnings, not critical incidents. Failed sends keep incidents visible. A crash after delivery but before receipt recording can produce a duplicate.
 
 For stale prices/signals, inspect exchange calendar, permitted data source and upstream jobs before rerunning. While `daily_close` is disabled, stale prices stay visible as warnings; two or more missing sessions become critical after collection is enabled. Do not invent missing sessions or silently mix adjusted and raw prices. For source failures, inspect robots/terms and HTTP status, then disable refused sources. For heartbeat/dead-job alerts, inspect laptop sleep, scheduler processes, queue leases and module environments. For disk/database capacity alerts, inspect usage and backup status; review a retention dry run before deleting. For model budget or verification alerts, inspect `/usage` and evidence quality; wait for budget reset or reduce scheduled work. For backup alerts, follow the backup checks below. Confirm fixes by rerunning the corresponding health check, not by manually resolving an active failure.
 
@@ -26,7 +38,12 @@ A successful archive-list check is not a restore test. Restore only into a dispo
 
 ## Keys and source changes
 
-Create a replacement key with the provider, update only the ignored local environment file, restart affected processes, test access, then revoke the old key. A Gemini key previously shared in chat still needs replacement. Never put credentials in commits, reports, screenshots or logbook fields.
+Create a replacement key with the provider, then save it on `/control-room`.
+The owner-only page writes only `GEMINI_API_KEY` to the ignored root `.env`,
+never displays the saved value and never sends it to Supabase. New research
+processes load the updated setting when they start. A Gemini key previously
+shared in chat still needs replacement. Never put credentials in commits,
+reports, screenshots or logbook fields.
 
 Disable a source in its module configuration and database source row where applicable, then confirm subsequent scheduled work skips it. Record the reason and review date in `docs/SOURCES_TERMS.md`. Browser sources additionally require exact host/path approval and accessible robots rules. Never enable a source solely because a client library can fetch it.
 

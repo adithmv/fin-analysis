@@ -48,6 +48,11 @@ npm run dev --prefix dashboard
 Open http://127.0.0.1:3000. Edit `config/watchlist.yaml` for tracked stocks;
 ingestion synchronizes it at startup. Run manually when daily data is needed.
 
+On this PC, install the desktop launch shortcut once with
+`ops\install-fin-analysis-shortcut.ps1`. After that, click **Fin Analysis** on
+the desktop to start the local dashboard and open its handbook. It no longer
+starts automatically at Windows sign-in.
+
 ## Phase 2 workflow
 
 Use separate Python 3.12 environments: the signal and VectorBT dependency sets
